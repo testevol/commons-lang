@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,11 +20,8 @@ import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 /**
  * <p>Assists in implementing {@link Object#equals(Object)} methods.</p>
@@ -77,136 +74,16 @@ import org.apache.commons.lang3.tuple.Pair;
  * }
  * </pre>
  *
+ * @author Apache Software Foundation
+ * @author <a href="mailto:steve.downey@netfolio.com">Steve Downey</a>
+ * @author Gary Gregory
+ * @author Pete Gieser
+ * @author Arun Mammen Thomas
  * @since 1.0
- * @version $Id: EqualsBuilder.java 1091531 2011-04-12 18:29:49Z ggregory $
+ * @version $Id: EqualsBuilder.java 1067685 2011-02-06 15:38:57Z niallp $
  */
-public class EqualsBuilder implements Builder<Boolean> {
-
-    /**
-     * <p>
-     * A registry of objects used by reflection methods to detect cyclical object references and avoid infinite loops.
-     * </p>
-     *
-     * @since 3.0
-     */
-    private static final ThreadLocal<Set<Pair<IDKey, IDKey>>> REGISTRY = new ThreadLocal<Set<Pair<IDKey, IDKey>>>();
-
-    /*
-     * NOTE: we cannot store the actual objects in a HashSet, as that would use the very hashCode()
-     * we are in the process of calculating.
-     *
-     * So we generate a one-to-one mapping from the original object to a new object.
-     *
-     * Now HashSet uses equals() to determine if two elements with the same hashcode really
-     * are equal, so we also need to ensure that the replacement objects are only equal
-     * if the original objects are identical.
-     *
-     * The original implementation (2.4 and before) used the System.indentityHashCode()
-     * method - however this is not guaranteed to generate unique ids (e.g. LANG-459)
-     *
-     * We now use the IDKey helper class (adapted from org.apache.axis.utils.IDKey)
-     * to disambiguate the duplicate ids.
-     */
-
-    /**
-     * <p>
-     * Returns the registry of object pairs being traversed by the reflection
-     * methods in the current thread.
-     * </p>
-     *
-     * @return Set the registry of objects being traversed
-     * @since 3.0
-     */
-    static Set<Pair<IDKey, IDKey>> getRegistry() {
-        return REGISTRY.get();
-    }
-
-    /**
-     * <p>
-     * Converters value pair into a register pair.
-     * </p>
-     *
-     * @param lhs <code>this</code> object
-     * @param rhs the other object
-     *
-     * @return the pair
-     */
-    static Pair<IDKey, IDKey> getRegisterPair(Object lhs, Object rhs) {
-        IDKey left = new IDKey(lhs);
-        IDKey right = new IDKey(rhs);
-        return Pair.of(left, right);
-    }
-
-    /**
-     * <p>
-     * Returns <code>true</code> if the registry contains the given object pair.
-     * Used by the reflection methods to avoid infinite loops.
-     * Objects might be swapped therefore a check is needed if the object pair
-     * is registered in given or swapped order.
-     * </p>
-     *
-     * @param lhs <code>this</code> object to lookup in registry
-     * @param rhs the other object to lookup on registry
-     * @return boolean <code>true</code> if the registry contains the given object.
-     * @since 3.0
-     */
-    static boolean isRegistered(Object lhs, Object rhs) {
-        Set<Pair<IDKey, IDKey>> registry = getRegistry();
-        Pair<IDKey, IDKey> pair = getRegisterPair(lhs, rhs);
-        Pair<IDKey, IDKey> swappedPair = Pair.of(pair.getLeft(), pair.getRight());
-
-        return registry != null
-                && (registry.contains(pair) || registry.contains(swappedPair));
-    }
-
-    /**
-     * <p>
-     * Registers the given object pair.
-     * Used by the reflection methods to avoid infinite loops.
-     * </p>
-     *
-     * @param lhs <code>this</code> object to register
-     * @param rhs the other object to register
-     */
-    static void register(Object lhs, Object rhs) {
-        synchronized (EqualsBuilder.class) {
-            if (getRegistry() == null) {
-                REGISTRY.set(new HashSet<Pair<IDKey, IDKey>>());
-            }
-        }
-
-        Set<Pair<IDKey, IDKey>> registry = getRegistry();
-        Pair<IDKey, IDKey> pair = getRegisterPair(lhs, rhs);
-        registry.add(pair);
-    }
-
-    /**
-     * <p>
-     * Unregisters the given object pair.
-     * </p>
-     *
-     * <p>
-     * Used by the reflection methods to avoid infinite loops.
-     *
-     * @param lhs <code>this</code> object to unregister
-     * @param rhs the other object to unregister
-     * @since 3.0
-     */
-    static void unregister(Object lhs, Object rhs) {
-        Set<Pair<IDKey, IDKey>> registry = getRegistry();
-        if (registry != null) {
-            Pair<IDKey, IDKey> pair = getRegisterPair(lhs, rhs);
-            registry.remove(pair);
-            synchronized (EqualsBuilder.class) {
-                //read again
-                registry = getRegistry();
-                if (registry != null && registry.isEmpty()) {
-                    REGISTRY.remove();
-                }
-            }
-        }
-    }
-
+public class EqualsBuilder {
+    
     /**
      * If the fields tested are equals.
      * The default value is <code>true</code>.
@@ -241,10 +118,32 @@ public class EqualsBuilder implements Builder<Boolean> {
      *
      * @param lhs  <code>this</code> object
      * @param rhs  the other object
+     * @return <code>true</code> if the two Objects have tested equals.
+     */
+    public static boolean reflectionEquals(Object lhs, Object rhs) {
+        return reflectionEquals(lhs, rhs, false, null, null);
+    }
+
+    /**
+     * <p>This method uses reflection to determine if the two <code>Object</code>s
+     * are equal.</p>
+     *
+     * <p>It uses <code>AccessibleObject.setAccessible</code> to gain access to private
+     * fields. This means that it will throw a security exception if run under
+     * a security manager, if the permissions are not set up correctly. It is also
+     * not as efficient as testing explicitly.</p>
+     *
+     * <p>Transient members will be not be tested, as they are likely derived
+     * fields, and not part of the value of the Object.</p>
+     *
+     * <p>Static fields will not be tested. Superclass fields will be included.</p>
+     *
+     * @param lhs  <code>this</code> object
+     * @param rhs  the other object
      * @param excludeFields  Collection of String field names to exclude from testing
      * @return <code>true</code> if the two Objects have tested equals.
      */
-    public static boolean reflectionEquals(Object lhs, Object rhs, Collection<String> excludeFields) {
+    public static boolean reflectionEquals(Object lhs, Object rhs, Collection /*String*/ excludeFields) {
         return reflectionEquals(lhs, rhs, ReflectionToStringBuilder.toNoNullStringArray(excludeFields));
     }
 
@@ -267,7 +166,7 @@ public class EqualsBuilder implements Builder<Boolean> {
      * @param excludeFields  array of field names to exclude from testing
      * @return <code>true</code> if the two Objects have tested equals.
      */
-    public static boolean reflectionEquals(Object lhs, Object rhs, String... excludeFields) {
+    public static boolean reflectionEquals(Object lhs, Object rhs, String[] excludeFields) {
         return reflectionEquals(lhs, rhs, false, null, excludeFields);
     }
 
@@ -292,7 +191,36 @@ public class EqualsBuilder implements Builder<Boolean> {
      * @return <code>true</code> if the two Objects have tested equals.
      */
     public static boolean reflectionEquals(Object lhs, Object rhs, boolean testTransients) {
-        return reflectionEquals(lhs, rhs, testTransients, null);
+        return reflectionEquals(lhs, rhs, testTransients, null, null);
+    }
+
+    /**
+     * <p>This method uses reflection to determine if the two <code>Object</code>s
+     * are equal.</p>
+     *
+     * <p>It uses <code>AccessibleObject.setAccessible</code> to gain access to private
+     * fields. This means that it will throw a security exception if run under
+     * a security manager, if the permissions are not set up correctly. It is also
+     * not as efficient as testing explicitly.</p>
+     *
+     * <p>If the testTransients parameter is set to <code>true</code>, transient
+     * members will be tested, otherwise they are ignored, as they are likely
+     * derived fields, and not part of the value of the <code>Object</code>.</p>
+     *
+     * <p>Static fields will not be included. Superclass fields will be appended
+     * up to and including the specified superclass. A null superclass is treated
+     * as java.lang.Object.</p>
+     *
+     * @param lhs  <code>this</code> object
+     * @param rhs  the other object
+     * @param testTransients  whether to include transient fields
+     * @param reflectUpToClass  the superclass to reflect up to (inclusive),
+     *  may be <code>null</code>
+     * @return <code>true</code> if the two Objects have tested equals.
+     * @since 2.0
+     */
+    public static boolean reflectionEquals(Object lhs, Object rhs, boolean testTransients, Class reflectUpToClass) {
+        return reflectionEquals(lhs, rhs, testTransients, reflectUpToClass, null);
     }
 
     /**
@@ -321,21 +249,21 @@ public class EqualsBuilder implements Builder<Boolean> {
      * @return <code>true</code> if the two Objects have tested equals.
      * @since 2.0
      */
-    public static boolean reflectionEquals(Object lhs, Object rhs, boolean testTransients, Class<?> reflectUpToClass,
-            String... excludeFields) {
+    public static boolean reflectionEquals(Object lhs, Object rhs, boolean testTransients, Class reflectUpToClass,
+            String[] excludeFields) {
         if (lhs == rhs) {
             return true;
         }
         if (lhs == null || rhs == null) {
             return false;
         }
-        // Find the leaf class since there may be transients in the leaf
+        // Find the leaf class since there may be transients in the leaf 
         // class or in classes between the leaf and root.
-        // If we are not testing transients or a subclass has no ivars,
+        // If we are not testing transients or a subclass has no ivars, 
         // then a subclass can test equals to a superclass.
-        Class<?> lhsClass = lhs.getClass();
-        Class<?> rhsClass = rhs.getClass();
-        Class<?> testClass;
+        Class lhsClass = lhs.getClass();
+        Class rhsClass = rhs.getClass();
+        Class testClass;
         if (lhsClass.isInstance(rhs)) {
             testClass = lhsClass;
             if (!rhsClass.isInstance(lhs)) {
@@ -361,7 +289,7 @@ public class EqualsBuilder implements Builder<Boolean> {
             }
         } catch (IllegalArgumentException e) {
             // In this case, we tried to test a subclass vs. a superclass and
-            // the subclass has ivars or the ivars are transient and
+            // the subclass has ivars or the ivars are transient and 
             // we are testing transients.
             // If a subclass has ivars that we are trying to test them, we get an
             // exception and we know that the objects are not equal.
@@ -373,7 +301,7 @@ public class EqualsBuilder implements Builder<Boolean> {
     /**
      * <p>Appends the fields and values defined by the given object of the
      * given Class.</p>
-     *
+     * 
      * @param lhs  the left hand object
      * @param rhs  the right hand object
      * @param clazz  the class to append details of
@@ -384,36 +312,26 @@ public class EqualsBuilder implements Builder<Boolean> {
     private static void reflectionAppend(
         Object lhs,
         Object rhs,
-        Class<?> clazz,
+        Class clazz,
         EqualsBuilder builder,
         boolean useTransients,
         String[] excludeFields) {
-
-        if (isRegistered(lhs, rhs)) {
-            return;
-        }
-
-        try {
-            register(lhs, rhs);
-            Field[] fields = clazz.getDeclaredFields();
-            AccessibleObject.setAccessible(fields, true);
-            for (int i = 0; i < fields.length && builder.isEquals; i++) {
-                Field f = fields[i];
-                if (!ArrayUtils.contains(excludeFields, f.getName())
-                    && (f.getName().indexOf('$') == -1)
-                    && (useTransients || !Modifier.isTransient(f.getModifiers()))
-                    && (!Modifier.isStatic(f.getModifiers()))) {
-                    try {
-                        builder.append(f.get(lhs), f.get(rhs));
-                    } catch (IllegalAccessException e) {
-                        //this can't happen. Would get a Security exception instead
-                        //throw a runtime exception in case the impossible happens.
-                        throw new InternalError("Unexpected IllegalAccessException");
-                    }
+        Field[] fields = clazz.getDeclaredFields();
+        AccessibleObject.setAccessible(fields, true);
+        for (int i = 0; i < fields.length && builder.isEquals; i++) {
+            Field f = fields[i];
+            if (!ArrayUtils.contains(excludeFields, f.getName())
+                && (f.getName().indexOf('$') == -1)
+                && (useTransients || !Modifier.isTransient(f.getModifiers()))
+                && (!Modifier.isStatic(f.getModifiers()))) {
+                try {
+                    builder.append(f.get(lhs), f.get(rhs));
+                } catch (IllegalAccessException e) {
+                    //this can't happen. Would get a Security exception instead
+                    //throw a runtime exception in case the impossible happens.
+                    throw new InternalError("Unexpected IllegalAccessException");
                 }
             }
-        } finally {
-            unregister(lhs, rhs);
         }
     }
 
@@ -455,12 +373,12 @@ public class EqualsBuilder implements Builder<Boolean> {
             this.setEquals(false);
             return this;
         }
-        Class<?> lhsClass = lhs.getClass();
+        Class lhsClass = lhs.getClass();
         if (!lhsClass.isArray()) {
             // The simple case, not an array, just test the element
             isEquals = lhs.equals(rhs);
         } else if (lhs.getClass() != rhs.getClass()) {
-            // Here when we compare different dimensions, for example: a boolean[][] to a boolean[]
+            // Here when we compare different dimensions, for example: a boolean[][] to a boolean[] 
             this.setEquals(false);
         }
         // 'Switch' on type of array, to dispatch to the correct handler
@@ -492,7 +410,7 @@ public class EqualsBuilder implements Builder<Boolean> {
      * <p>
      * Test if two <code>long</code> s are equal.
      * </p>
-     *
+     * 
      * @param lhs
      *                  the left hand <code>long</code>
      * @param rhs
@@ -912,21 +830,8 @@ public class EqualsBuilder implements Builder<Boolean> {
     }
 
     /**
-     * <p>Returns <code>true</code> if the fields that have been checked
-     * are all equal.</p>
-     *
-     * @return <code>true</code> if all of the fields that have been checked
-     *         are equal, <code>false</code> otherwise.
-     *
-     * @since 3.0
-     */
-    public Boolean build() {
-        return Boolean.valueOf(isEquals());
-    }
-
-    /**
      * Sets the <code>isEquals</code> value.
-     *
+     * 
      * @param isEquals The value to set.
      * @since 2.1
      */

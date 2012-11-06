@@ -30,6 +30,7 @@ import org.apache.commons.lang3.ObjectUtils;
 /**
  * Unit test for Tokenizer.
  * 
+ * @author Matthew Inger
  */
 public class StrTokenizerTest extends TestCase {
 
@@ -477,7 +478,7 @@ public class StrTokenizerTest extends TestCase {
         String input = "a  b c";
         StrTokenizer tok = new StrTokenizer(input);
         String[] array = tok.getTokenArray();
-        List<?> list = tok.getTokenList();
+        List list = tok.getTokenList();
         
         assertEquals(Arrays.asList(array), list);
         assertEquals(3, list.size());
@@ -552,7 +553,6 @@ public class StrTokenizerTest extends TestCase {
      */
     public void testCloneNotSupportedException() {
         Object notCloned = (new StrTokenizer() {
-            @Override
             Object cloneReset() throws CloneNotSupportedException {
                 throw new CloneNotSupportedException("test");
             }
@@ -578,12 +578,12 @@ public class StrTokenizerTest extends TestCase {
         StrTokenizer tokenizer = new StrTokenizer(input);
         // Start sanity check
         assertEquals("a", tokenizer.nextToken());
-        tokenizer.reset(input);
+        tokenizer.reset();
         assertEquals("a", tokenizer.nextToken());
         // End sanity check
         StrTokenizer clonedTokenizer = (StrTokenizer) tokenizer.clone();
         input[0] = 'b';
-        tokenizer.reset(input);
+        tokenizer.reset();
         assertEquals("b", tokenizer.nextToken());
         assertEquals("a", clonedTokenizer.nextToken());
     }
@@ -709,8 +709,9 @@ public class StrTokenizerTest extends TestCase {
     public void testReset_charArray() {
         StrTokenizer tok = new StrTokenizer("x x x");
         
-        char[] array = new char[] {'a', 'b', 'c'};
+        char[] array = new char[] {'a', ' ', 'c'};
         tok.reset(array);
+        array[1] = 'b'; // test linked array
         assertEquals("abc", tok.next());
         assertEquals(false, tok.hasNext());
         
@@ -798,8 +799,7 @@ public class StrTokenizerTest extends TestCase {
     //-----------------------------------------------------------------------
     public void testTokenizeSubclassInputChange() {
         StrTokenizer tkn = new StrTokenizer("a b c d e") {
-            @Override
-            protected List<String> tokenize(char[] chars, int offset, int count) {
+            protected List tokenize(char[] chars, int offset, int count) {
                 return super.tokenize("w x y z".toCharArray(), 2, 5);
             }
         };
@@ -810,9 +810,8 @@ public class StrTokenizerTest extends TestCase {
     //-----------------------------------------------------------------------
     public void testTokenizeSubclassOutputChange() {
         StrTokenizer tkn = new StrTokenizer("a b c") {
-            @Override
-            protected List<String> tokenize(char[] chars, int offset, int count) {
-                List<String> list = super.tokenize(chars, offset, count);
+            protected List tokenize(char[] chars, int offset, int count) {
+                List list = super.tokenize(chars, offset, count);
                 Collections.reverse(list);
                 return list;
             }

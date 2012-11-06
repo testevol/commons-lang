@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,27 +31,25 @@ import java.util.Map;
  * For example, it would be possible to implement a lookup that used the
  * key as a primary key, and looked up the value on demand from the database
  *
+ * @author Apache Software Foundation
  * @since 2.2
- * @version $Id: StrLookup.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @version $Id: StrLookup.java 1067685 2011-02-06 15:38:57Z niallp $
  */
-public abstract class StrLookup<V> {
+public abstract class StrLookup {
 
     /**
      * Lookup that always returns null.
      */
-    private static final StrLookup<String> NONE_LOOKUP;
+    private static final StrLookup NONE_LOOKUP;
     /**
      * Lookup that uses System properties.
      */
-    private static final StrLookup<String> SYSTEM_PROPERTIES_LOOKUP;
+    private static final StrLookup SYSTEM_PROPERTIES_LOOKUP;
     static {
-        NONE_LOOKUP = new MapStrLookup<String>(null);
-        StrLookup<String> lookup = null;
+        NONE_LOOKUP = new MapStrLookup(null);
+        StrLookup lookup = null;
         try {
-            final Map<?, ?> propMap = System.getProperties();
-            @SuppressWarnings("unchecked") // System property keys and values are always Strings
-            final Map<String, String> properties = (Map<String, String>) propMap;
-            lookup = new MapStrLookup<String>(properties);
+            lookup = new MapStrLookup(System.getProperties());
         } catch (SecurityException ex) {
             lookup = NONE_LOOKUP;
         }
@@ -64,7 +62,7 @@ public abstract class StrLookup<V> {
      *
      * @return a lookup that always returns null, not null
      */
-    public static StrLookup<?> noneLookup() {
+    public static StrLookup noneLookup() {
         return NONE_LOOKUP;
     }
 
@@ -79,7 +77,7 @@ public abstract class StrLookup<V> {
      *
      * @return a lookup using system properties, not null
      */
-    public static StrLookup<String> systemPropertiesLookup() {
+    public static StrLookup systemPropertiesLookup() {
         return SYSTEM_PROPERTIES_LOOKUP;
     }
 
@@ -89,12 +87,11 @@ public abstract class StrLookup<V> {
      * If the map is null, then null will be returned from every lookup.
      * The map result object is converted to a string using toString().
      *
-     * @param <V> the type of the values supported by the lookup
      * @param map  the map of keys to values, may be null
      * @return a lookup using the map, not null
      */
-    public static <V> StrLookup<V> mapLookup(Map<String, V> map) {
-        return new MapStrLookup<V>(map);
+    public static StrLookup mapLookup(Map map) {
+        return new MapStrLookup(map);
     }
 
     //-----------------------------------------------------------------------
@@ -121,7 +118,7 @@ public abstract class StrLookup<V> {
      * The {@link #lookup(String)} method always returns a String, regardless of
      * the underlying data, by converting it as necessary. For example:
      * <pre>
-     * Map<String, Object> map = new HashMap<String, Object>();
+     * Map map = new HashMap();
      * map.put("number", new Integer(2));
      * assertEquals("2", StrLookup.mapLookup(map).lookup("number"));
      * </pre>
@@ -134,17 +131,17 @@ public abstract class StrLookup<V> {
     /**
      * Lookup implementation that uses a Map.
      */
-    static class MapStrLookup<V> extends StrLookup<V> {
+    static class MapStrLookup extends StrLookup {
 
         /** Map keys are variable names and value. */
-        private final Map<String, V> map;
+        private final Map map;
 
         /**
          * Creates a new instance backed by a Map.
          *
          * @param map  the map of keys to values, may be null
          */
-        MapStrLookup(Map<String, V> map) {
+        MapStrLookup(Map map) {
             this.map = map;
         }
 
@@ -157,7 +154,6 @@ public abstract class StrLookup<V> {
          * @param key  the key to be looked up, may be null
          * @return the matching value, null if no match
          */
-        @Override
         public String lookup(String key) {
             if (map == null) {
                 return null;

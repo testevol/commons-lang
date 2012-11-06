@@ -20,6 +20,9 @@ package org.apache.commons.lang3;
 import java.text.NumberFormat;
 import java.util.Calendar;
 
+import org.apache.commons.lang3.CharSet;
+import org.apache.commons.lang3.CharUtils;
+
 /**
  * Tests the difference in performance between CharUtils and CharSet.
  * 
@@ -54,10 +57,10 @@ run_inlined_CharUtils_isAsciiNumeric: 709 milliseconds.
 run_inlined_CharUtils_isAsciiNumeric: 84,420 milliseconds.
 
 
- * @version $Id: CharUtilsPerfRun.java 1144929 2011-07-10 18:26:16Z ggregory $
+ * @version $Id: CharUtilsPerfRun.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class CharUtilsPerfRun {
-    final static String VERSION = "$Id: CharUtilsPerfRun.java 1144929 2011-07-10 18:26:16Z ggregory $";
+    final static String VERSION = "$Id: CharUtilsPerfRun.java 1067685 2011-02-06 15:38:57Z niallp $";
 
     final static int WARM_UP = 100;
 
@@ -125,7 +128,8 @@ public class CharUtilsPerfRun {
     private int run_CharSet(int loopCount) {
         int t = 0;
         for (int i = 0; i < loopCount; i++) {
-            for (char ch : CHAR_SAMPLES) {
+            for (int j = 0; j < CHAR_SAMPLES.length; j++) {
+                char ch = CHAR_SAMPLES[j];
                 boolean b = CharSet.ASCII_NUMERIC.contains(ch);
                 t += b ? 1 : 0;
             }
@@ -136,7 +140,8 @@ public class CharUtilsPerfRun {
     private int run_CharUtils_isAsciiNumeric(int loopCount) {
         int t = 0;
         for (int i = 0; i < loopCount; i++) {
-            for (char ch : CHAR_SAMPLES) {
+            for (int j = 0; j < CHAR_SAMPLES.length; j++) {
+                char ch = CHAR_SAMPLES[j];
                 boolean b = CharUtils.isAsciiNumeric(ch);
                 t += b ? 1 : 0;
             }
@@ -147,7 +152,8 @@ public class CharUtilsPerfRun {
     private int run_inlined_CharUtils_isAsciiNumeric(int loopCount) {
         int t = 0;
         for (int i = 0; i < loopCount; i++) {
-            for (char ch : CHAR_SAMPLES) {
+            for (int j = 0; j < CHAR_SAMPLES.length; j++) {
+                char ch = CHAR_SAMPLES[j];
                 boolean b = (ch >= '0' && ch <= '9');
                 t += b ? 1 : 0;
             }

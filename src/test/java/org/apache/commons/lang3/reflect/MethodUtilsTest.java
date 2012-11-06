@@ -27,21 +27,14 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.mutable.Mutable;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.apache.commons.lang3.reflect.MethodUtils;
 
 /**
  * Unit tests MethodUtils
- * @version $Id: MethodUtilsTest.java 1144929 2011-07-10 18:26:16Z ggregory $
+ * @author mbenson
+ * @version $Id: MethodUtilsTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class MethodUtilsTest extends TestCase {
-  
-    private static interface PrivateInterface {}
-    
-    static class TestBeanWithInterfaces implements PrivateInterface {
-        public String foo() {
-            return "foo()";
-        }
-    }
-    
     public static class TestBean {
 
         public static String bar() {
@@ -67,11 +60,6 @@ public class MethodUtilsTest extends TestCase {
         public static String bar(Object o) {
             return "bar(Object)";
         }
-        
-        @SuppressWarnings("unused")
-        private void privateStuff() {
-        }
-
 
         public String foo() {
             return "foo()";
@@ -98,7 +86,7 @@ public class MethodUtilsTest extends TestCase {
         }
     }
 
-    private static class TestMutable implements Mutable<Object> {
+    private static class TestMutable implements Mutable {
         public Object getValue() {
             return null;
         }
@@ -108,14 +96,14 @@ public class MethodUtilsTest extends TestCase {
     }
 
     private TestBean testBean;
-    private Map<Class<?>, Class<?>[]> classCache;
+    private Map classCache;
 
     public MethodUtilsTest(String name) {
         super(name);
-        classCache = new HashMap<Class<?>, Class<?>[]>();
+        classCache = new HashMap();
     }
 
-    @Override
+
     protected void setUp() throws Exception {
         super.setUp();
         testBean = new TestBean();
@@ -128,11 +116,9 @@ public class MethodUtilsTest extends TestCase {
 
     public void testInvokeMethod() throws Exception {
         assertEquals("foo()", MethodUtils.invokeMethod(testBean, "foo",
-                (Object[]) ArrayUtils.EMPTY_CLASS_ARRAY));
+                ArrayUtils.EMPTY_CLASS_ARRAY));
         assertEquals("foo()", MethodUtils.invokeMethod(testBean, "foo",
-                (Object[]) null));
-        assertEquals("foo()", MethodUtils.invokeMethod(testBean, "foo", 
-                (Object[]) null, (Class<?>[]) null));
+                (Class[]) null));
         assertEquals("foo(String)", MethodUtils.invokeMethod(testBean, "foo",
                 ""));
         assertEquals("foo(Object)", MethodUtils.invokeMethod(testBean, "foo",
@@ -150,12 +136,10 @@ public class MethodUtilsTest extends TestCase {
     }
 
     public void testInvokeExactMethod() throws Exception {
-        assertEquals("foo()", MethodUtils.invokeExactMethod(testBean, "foo",
-                (Object[]) ArrayUtils.EMPTY_CLASS_ARRAY));
-        assertEquals("foo()", MethodUtils.invokeExactMethod(testBean, "foo",
-                (Object[]) null));
-        assertEquals("foo()", MethodUtils.invokeExactMethod(testBean, "foo", 
-                (Object[]) null, (Class<?>[]) null));
+        assertEquals("foo()", MethodUtils.invokeMethod(testBean, "foo",
+                ArrayUtils.EMPTY_CLASS_ARRAY));
+        assertEquals("foo()", MethodUtils.invokeMethod(testBean, "foo",
+                (Class[]) null));
         assertEquals("foo(String)", MethodUtils.invokeExactMethod(testBean,
                 "foo", ""));
         assertEquals("foo(Object)", MethodUtils.invokeExactMethod(testBean,
@@ -187,11 +171,9 @@ public class MethodUtilsTest extends TestCase {
 
     public void testInvokeStaticMethod() throws Exception {
         assertEquals("bar()", MethodUtils.invokeStaticMethod(TestBean.class,
-                "bar", (Object[]) ArrayUtils.EMPTY_CLASS_ARRAY));
+                "bar", ArrayUtils.EMPTY_CLASS_ARRAY));
         assertEquals("bar()", MethodUtils.invokeStaticMethod(TestBean.class,
-                "bar", (Object[]) null));
-        assertEquals("bar()", MethodUtils.invokeStaticMethod(TestBean.class,
-                "bar", (Object[]) null, (Class<?>[]) null));
+                "bar", (Class[]) null));
         assertEquals("bar(String)", MethodUtils.invokeStaticMethod(
                 TestBean.class, "bar", ""));
         assertEquals("bar(Object)", MethodUtils.invokeStaticMethod(
@@ -206,21 +188,13 @@ public class MethodUtilsTest extends TestCase {
                 TestBean.class, "bar", NumberUtils.LONG_ONE));
         assertEquals("bar(double)", MethodUtils.invokeStaticMethod(
                 TestBean.class, "bar", NumberUtils.DOUBLE_ONE));
-        
-        try {
-            MethodUtils.invokeStaticMethod(TestBean.class, "does_not_exist");
-            fail("should throw NoSuchMethodException");
-        } catch (NoSuchMethodException e) {
-        }
     }
 
     public void testInvokeExactStaticMethod() throws Exception {
-        assertEquals("bar()", MethodUtils.invokeExactStaticMethod(TestBean.class,
-                "bar", (Object[]) ArrayUtils.EMPTY_CLASS_ARRAY));
-        assertEquals("bar()", MethodUtils.invokeExactStaticMethod(TestBean.class,
-                "bar", (Object[]) null));
-        assertEquals("bar()", MethodUtils.invokeExactStaticMethod(TestBean.class,
-                "bar", (Object[]) null, (Class<?>[]) null));
+        assertEquals("bar()", MethodUtils.invokeStaticMethod(TestBean.class,
+                "bar", ArrayUtils.EMPTY_CLASS_ARRAY));
+        assertEquals("bar()", MethodUtils.invokeStaticMethod(TestBean.class,
+                "bar", (Class[]) null));
         assertEquals("bar(String)", MethodUtils.invokeExactStaticMethod(
                 TestBean.class, "bar", ""));
         assertEquals("bar(Object)", MethodUtils.invokeExactStaticMethod(
@@ -253,28 +227,21 @@ public class MethodUtilsTest extends TestCase {
 
     public void testGetAccessibleInterfaceMethod() throws Exception {
 
-        Class<?>[][] p = { ArrayUtils.EMPTY_CLASS_ARRAY, null };
-        for (Class<?>[] element : p) {
-            Method method = TestMutable.class.getMethod("getValue", element);
+        Class[][] p = { ArrayUtils.EMPTY_CLASS_ARRAY, null };
+        for (int i = 0; i < p.length; i++) {
+            Method method = TestMutable.class.getMethod("getValue", p[i]);
             Method accessibleMethod = MethodUtils.getAccessibleMethod(method);
             assertNotSame(accessibleMethod, method);
             assertSame(Mutable.class, accessibleMethod.getDeclaringClass());
         }
     }
-    
-    public void testGetAccessibleMethodPrivateInterface() throws Exception {
-        Method expected = TestBeanWithInterfaces.class.getMethod("foo");
-        assertNotNull(expected);
-        Method actual = MethodUtils.getAccessibleMethod(TestBeanWithInterfaces.class, "foo");
-        assertNull(actual);
-    }
 
     public void testGetAccessibleInterfaceMethodFromDescription()
             throws Exception {
-        Class<?>[][] p = { ArrayUtils.EMPTY_CLASS_ARRAY, null };
-        for (Class<?>[] element : p) {
+        Class[][] p = { ArrayUtils.EMPTY_CLASS_ARRAY, null };
+        for (int i = 0; i < p.length; i++) {
             Method accessibleMethod = MethodUtils.getAccessibleMethod(
-                    TestMutable.class, "getValue", element);
+                    TestMutable.class, "getValue", p[i]);
             assertSame(Mutable.class, accessibleMethod.getDeclaringClass());
         }
     }
@@ -289,12 +256,6 @@ public class MethodUtilsTest extends TestCase {
         assertSame(MutableObject.class, MethodUtils.getAccessibleMethod(
                 MutableObject.class, "getValue", ArrayUtils.EMPTY_CLASS_ARRAY)
                 .getDeclaringClass());
-    }
-    
-    public void testGetAccessibleMethodInaccessible() throws Exception {
-        Method expected = TestBean.class.getDeclaredMethod("privateStuff");
-        Method actual = MethodUtils.getAccessibleMethod(expected);
-        assertNull(actual);
     }
 
     public void testGetMatchingAccessibleMethod() throws Exception {
@@ -348,8 +309,8 @@ public class MethodUtilsTest extends TestCase {
                 singletonArray(ChildObject.class), singletonArray(ChildInterface.class));
     }
 
-    private void expectMatchingAccessibleMethodParameterTypes(Class<?> cls,
-            String methodName, Class<?>[] requestTypes, Class<?>[] actualTypes) {
+    private void expectMatchingAccessibleMethodParameterTypes(Class cls,
+            String methodName, Class[] requestTypes, Class[] actualTypes) {
         Method m = MethodUtils.getMatchingAccessibleMethod(cls, methodName,
                 requestTypes);
         assertTrue(toString(m.getParameterTypes()) + " not equals "
@@ -357,12 +318,12 @@ public class MethodUtilsTest extends TestCase {
                 .getParameterTypes()));
     }
 
-    private String toString(Class<?>[] c) {
+    private String toString(Class[] c) {
         return Arrays.asList(c).toString();
     }
 
-    private Class<?>[] singletonArray(Class<?> c) {
-        Class<?>[] result = classCache.get(c);
+    private Class[] singletonArray(Class c) {
+        Class[] result = (Class[]) classCache.get(c);
         if (result == null) {
             result = new Class[] { c };
             classCache.put(c, result);

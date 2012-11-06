@@ -21,6 +21,9 @@ import java.util.Date;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
+
 public class DateUtilsFragmentTest extends TestCase {
 
     private static final int months = 7;   // second final prime before 12
@@ -33,7 +36,6 @@ public class DateUtilsFragmentTest extends TestCase {
     private Date aDate;
     private Calendar aCalendar;
 
-    @Override
     protected void setUp() {
         aCalendar = Calendar.getInstance();
         aCalendar.set(2005, months, days, hours, minutes, seconds);
@@ -371,7 +373,7 @@ public class DateUtilsFragmentTest extends TestCase {
         long testResult = DateUtils.getFragmentInMilliseconds(aCalendar, Calendar.MONTH);
         assertEquals(millis + (seconds * DateUtils.MILLIS_PER_SECOND) + (minutes * DateUtils.MILLIS_PER_MINUTE)
                 + (hours * DateUtils.MILLIS_PER_HOUR) + (days * DateUtils.MILLIS_PER_DAY),
-testResult);
+                testResult);
     }
     
     public void testSecondsOfMonthWithDate() {
@@ -437,7 +439,7 @@ testResult);
         long testResult = DateUtils.getFragmentInMilliseconds(aCalendar, Calendar.YEAR);
         assertEquals(millis + (seconds * DateUtils.MILLIS_PER_SECOND) + (minutes * DateUtils.MILLIS_PER_MINUTE)
                 + (hours * DateUtils.MILLIS_PER_HOUR) + (aCalendar.get(Calendar.DAY_OF_YEAR) * DateUtils.MILLIS_PER_DAY),
-testResult);
+                testResult);
     }
     
     public void testSecondsOfYearWithDate() {

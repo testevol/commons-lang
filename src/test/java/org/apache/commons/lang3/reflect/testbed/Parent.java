@@ -17,12 +17,12 @@
 package org.apache.commons.lang3.reflect.testbed;
 
 /**
- * @version $Id: Parent.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author mbenson
+ * @version $Id: Parent.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 class Parent implements Foo {
     public String s = "s";
     protected boolean b = false;
     int i = 0;
-    @SuppressWarnings("unused")
     private double d = 0.0;
 }

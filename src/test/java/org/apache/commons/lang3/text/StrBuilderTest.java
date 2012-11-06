@@ -28,7 +28,8 @@ import org.apache.commons.lang3.ArrayUtils;
 /**
  * Unit tests for {@link org.apache.commons.lang3.text.StrBuilder}.
  * 
- * @version $Id: StrBuilderTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Michael Heuer
+ * @version $Id: StrBuilderTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class StrBuilderTest extends TestCase {
 
@@ -241,6 +242,33 @@ public class StrBuilderTest extends TestCase {
         } catch (IndexOutOfBoundsException e) {
             // expected
         }
+    }
+
+    //-----------------------------------------------------------------------
+    public void testClone() throws Exception {
+        StrBuilder sb = new StrBuilder();
+        sb.setNewLineText("NEWLINE");
+        sb.setNullText("NULLVALUE");
+        sb.append("abc");
+        assertEquals("before", "abc", sb.toString());
+
+        // Clone
+        StrBuilder clone = (StrBuilder)sb.clone();
+        assertEquals("capacity", sb.capacity(), clone.capacity());
+        assertEquals("size", sb.size(), clone.size());
+        assertEquals("toString", sb.toString(), clone.toString());
+
+        // Modify Original
+        sb.append("def");
+        assertEquals("original-1", "abcdef", sb.toString());
+        assertEquals("different",  "abc", clone.toString());
+
+        // Modify Clone
+        clone.append((String)null);
+        assertEquals("append null", "abcNULLVALUE", clone.toString());
+        clone.appendNewLine();
+        assertEquals("append newline", "abcNULLVALUENEWLINE", clone.toString());
+        assertEquals("original-2",  "abcdef", sb.toString());
     }
 
     //-----------------------------------------------------------------------
@@ -1075,39 +1103,6 @@ public class StrBuilderTest extends TestCase {
     }
 
     //-----------------------------------------------------------------------
-    public void testSubSequenceIntInt() {
-       StrBuilder sb = new StrBuilder ("hello goodbye");
-       // Start index is negative
-       try {
-            sb.subSequence(-1, 5);
-            fail();
-        } catch (IndexOutOfBoundsException e) {}
-        
-        // End index is negative
-       try {
-            sb.subSequence(2, -1);
-            fail();
-        } catch (IndexOutOfBoundsException e) {}
-        
-        // End index greater than length()
-        try {
-            sb.subSequence(2, sb.length() + 1);
-            fail();
-        } catch (IndexOutOfBoundsException e) {}
-        
-        // Start index greater then end index
-        try {
-            sb.subSequence(3, 2);
-            fail();
-        } catch (IndexOutOfBoundsException e) {}
-        
-        // Normal cases
-        assertEquals ("hello", sb.subSequence(0, 5));
-        assertEquals ("hello goodbye".subSequence(0, 6), sb.subSequence(0, 6));
-        assertEquals ("goodbye", sb.subSequence(6, 13));
-        assertEquals ("hello goodbye".subSequence(6,13), sb.subSequence(6, 13));
-    }
-
     public void testSubstringInt() {
         StrBuilder sb = new StrBuilder ("hello goodbye");
         assertEquals ("goodbye", sb.substring(6));
@@ -1505,7 +1500,6 @@ public class StrBuilderTest extends TestCase {
     }
 
     static final StrMatcher A_NUMBER_MATCHER = new StrMatcher() {
-        @Override
         public int isMatch(char[] buffer, int pos, int bufferStart, int bufferEnd) {
             if (buffer[pos] == 'A') {
                 pos++;

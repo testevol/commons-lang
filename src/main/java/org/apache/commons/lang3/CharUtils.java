@@ -19,13 +19,14 @@ package org.apache.commons.lang3;
 /**
  * <p>Operations on char primitives and Character objects.</p>
  *
- * <p>This class tries to handle {@code null} input gracefully.
- * An exception will not be thrown for a {@code null} input.
+ * <p>This class tries to handle <code>null</code> input gracefully.
+ * An exception will not be thrown for a <code>null</code> input.
  * Each method documents its behaviour in more detail.</p>
  * 
  * <p>#ThreadSafe#</p>
+ * @author Apache Software Foundation
  * @since 2.1
- * @version $Id: CharUtils.java 1095955 2011-04-22 15:57:37Z ggregory $
+ * @version $Id: CharUtils.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class CharUtils {
     
@@ -51,7 +52,7 @@ public class CharUtils {
     private static final Character[] CHAR_ARRAY = new Character[128];
     
     /**
-     * {@code \u000a} linefeed LF ('\n').
+     * <code>\u000a</code> linefeed LF ('\n').
      * 
      * @see <a href="http://java.sun.com/docs/books/jls/third_edition/html/lexical.html#101089">JLF: Escape Sequences
      *      for Character and String Literals</a>
@@ -60,7 +61,7 @@ public class CharUtils {
     public static final char LF = '\n';
 
     /**
-     * {@code \u000d} carriage return CR ('\r').
+     * <code>\u000d</code> carriage return CR ('\r').
      * 
      * @see <a href="http://java.sun.com/docs/books/jls/third_edition/html/lexical.html#101089">JLF: Escape Sequences
      *      for Character and String Literals</a>
@@ -77,8 +78,8 @@ public class CharUtils {
     }
 
     /**
-     * <p>{@code CharUtils} instances should NOT be constructed in standard programming.
-     * Instead, the class should be used as {@code CharUtils.toString('c');}.</p>
+     * <p><code>CharUtils</code> instances should NOT be constructed in standard programming.
+     * Instead, the class should be used as <code>CharUtils.toString('c');</code>.</p>
      *
      * <p>This constructor is public to permit tools that require a JavaBean instance
      * to operate.</p>
@@ -135,12 +136,12 @@ public class CharUtils {
     
     //-----------------------------------------------------------------------
     /**
-     * <p>Converts the Character to a char throwing an exception for {@code null}.</p>
+     * <p>Converts the Character to a char throwing an exception for <code>null</code>.</p>
      * 
      * <pre>
+     *   CharUtils.toChar(null) = IllegalArgumentException
      *   CharUtils.toChar(' ')  = ' '
      *   CharUtils.toChar('A')  = 'A'
-     *   CharUtils.toChar(null) throws IllegalArgumentException
      * </pre>
      *
      * @param ch  the character to convert
@@ -155,7 +156,7 @@ public class CharUtils {
     }
     
     /**
-     * <p>Converts the Character to a char handling {@code null}.</p>
+     * <p>Converts the Character to a char handling <code>null</code>.</p>
      * 
      * <pre>
      *   CharUtils.toChar(null, 'X') = 'X'
@@ -180,10 +181,10 @@ public class CharUtils {
      * an exception on empty Strings.</p>
      * 
      * <pre>
+     *   CharUtils.toChar(null) = IllegalArgumentException
+     *   CharUtils.toChar("")   = IllegalArgumentException
      *   CharUtils.toChar("A")  = 'A'
      *   CharUtils.toChar("BA") = 'B'
-     *   CharUtils.toChar(null) throws IllegalArgumentException
-     *   CharUtils.toChar("")   throws IllegalArgumentException
      * </pre>
      *
      * @param str  the character to convert
@@ -228,7 +229,7 @@ public class CharUtils {
      *
      * <pre>
      *   CharUtils.toIntValue('3')  = 3
-     *   CharUtils.toIntValue('A')  throws IllegalArgumentException
+     *   CharUtils.toIntValue('A')  = IllegalArgumentException
      * </pre>
      *
      * @param ch  the character to convert
@@ -271,9 +272,9 @@ public class CharUtils {
      * <p>This method coverts the char '1' to the int 1 and so on.</p>
      *
      * <pre>
+     *   CharUtils.toIntValue(null) = IllegalArgumentException
      *   CharUtils.toIntValue('3')  = 3
-     *   CharUtils.toIntValue(null) throws IllegalArgumentException
-     *   CharUtils.toIntValue('A')  throws IllegalArgumentException
+     *   CharUtils.toIntValue('A')  = IllegalArgumentException
      * </pre>
      *
      * @param ch  the character to convert, not null
@@ -338,7 +339,7 @@ public class CharUtils {
      * <p>For ASCII 7 bit characters, this uses a cache that will return the
      * same String object each time.</p>
      * 
-     * <p>If {@code null} is passed in, {@code null} will be returned.</p>
+     * <p>If <code>null</code> is passed in, <code>null</code> will be returned.</p>
      *
      * <pre>
      *   CharUtils.toString(null) = null
@@ -386,7 +387,7 @@ public class CharUtils {
      * 
      * <p>This format is the Java source code format.</p>
      * 
-     * <p>If {@code null} is passed in, {@code null} will be returned.</p>
+     * <p>If <code>null</code> is passed in, <code>null</code> will be returned.</p>
      *
      * <pre>
      *   CharUtils.unicodeEscaped(null) = null
@@ -555,6 +556,21 @@ public class CharUtils {
      */
     public static boolean isAsciiAlphanumeric(char ch) {
         return (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9');
+    }
+
+    // ----------------- Following code copied from Apache Harmony (Character class)
+    /**
+     * Indicates whether {@code ch} is a high- (or leading-) surrogate code unit
+     * that is used for representing supplementary characters in UTF-16
+     * encoding.
+     *
+     * @param ch
+     *            the character to test.
+     * @return {@code true} if {@code ch} is a high-surrogate code unit;
+     *         {@code false} otherwise.
+     */
+    static boolean isHighSurrogate(char ch) {
+        return ('\uD800' <= ch && '\uDBFF' >= ch);
     }
     
 }

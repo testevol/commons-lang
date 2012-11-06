@@ -22,8 +22,9 @@ import java.util.Locale;
 /**
  * Format factory.
  * 
+ * @author Apache Software Foundation
  * @since 2.4
- * @version $Id: FormatFactory.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @version $Id: FormatFactory.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public interface FormatFactory {
 

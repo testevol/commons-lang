@@ -16,8 +16,6 @@
  */
 package org.apache.commons.lang3.text;
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_4;
-
 import java.text.ChoiceFormat;
 import java.text.DateFormat;
 import java.text.FieldPosition;
@@ -30,22 +28,22 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.lang3.SystemUtils;
+import junit.framework.TestCase;
 
 /**
  * Test case for {@link ExtendedMessageFormat}.
  *
  * @since 2.4
- * @version $Id: ExtendedMessageFormatTest.java 1144929 2011-07-10 18:26:16Z ggregory $
+ * @version $Id: ExtendedMessageFormatTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class ExtendedMessageFormatTest extends TestCase {
 
-    private final Map<String, FormatFactory> registry = new HashMap<String, FormatFactory>();
+    private Map registry = new HashMap();
 
     /**
      * Create a new test case.
@@ -56,7 +54,6 @@ public class ExtendedMessageFormatTest extends TestCase {
         super(name);
     }
 
-    @Override
     protected void setUp() throws Exception {
         super.setUp();
         registry.put("lower", new LowerCaseFormatFactory());
@@ -97,14 +94,15 @@ public class ExtendedMessageFormatTest extends TestCase {
         String extendedPattern = "Name: {0,upper} ";
         String pattern = extendedPattern + builtinsPattern;
 
-        HashSet<Locale> testLocales = new HashSet<Locale>();
+        HashSet testLocales = new HashSet();
         testLocales.addAll(Arrays.asList(DateFormat.getAvailableLocales()));
         testLocales.retainAll(Arrays.asList(NumberFormat.getAvailableLocales()));
         testLocales.add(null);
 
-        for (Locale locale : testLocales) {
+        for (Iterator l = testLocales.iterator(); l.hasNext();) {
+            Locale locale = (Locale) l.next();
             MessageFormat builtins = createMessageFormat(builtinsPattern, locale);
-            String expectedPattern = extendedPattern + builtins.toPattern();
+            String expectedPattern = extendedPattern + builtins.toPattern();;
             DateFormat df = null;
             NumberFormat nf = null;
             ExtendedMessageFormat emf = null;
@@ -132,7 +130,7 @@ public class ExtendedMessageFormatTest extends TestCase {
 //    /**
 //     * Test extended formats with choice format.
 //     *
-//     * NOTE: FAILING - currently sub-formats not supported
+//     * N.B. FAILING - currently sub-formats not supported
 //     */
 //    public void testExtendedWithChoiceFormat() {
 //        String pattern = "Choice: {0,choice,1.0#{1,lower}|2.0#{1,upper}}";
@@ -149,7 +147,7 @@ public class ExtendedMessageFormatTest extends TestCase {
 //    /**
 //     * Test mixed extended and built-in formats with choice format.
 //     *
-//     * NOTE: FAILING - currently sub-formats not supported
+//     * N.B. FAILING - currently sub-formats not supported
 //     */
 //    public void testExtendedAndBuiltInWithChoiceFormat() {
 //        String pattern = "Choice: {0,choice,1.0#{0} {1,lower} {2,number}|2.0#{0} {1,upper} {2,number,currency}}";
@@ -193,13 +191,13 @@ public class ExtendedMessageFormatTest extends TestCase {
         Locale[] availableLocales = ChoiceFormat.getAvailableLocales();
 
         choicePattern = "{0,choice,1#One|2#Two|3#Many {0,number}}";
-        for (Object value : values) {
-            checkBuiltInFormat(value + ": " + choicePattern, new Object[] {value}, availableLocales);
+        for (int i = 0; i < values.length; i++) {
+            checkBuiltInFormat(values[i] + ": " + choicePattern, new Object[] {values[i]}, availableLocales);
         }
 
         choicePattern = "{0,choice,1#''One''|2#\"Two\"|3#''{Many}'' {0,number}}";
-        for (Object value : values) {
-            checkBuiltInFormat(value + ": " + choicePattern, new Object[] {value}, availableLocales);
+        for (int i = 0; i < values.length; i++) {
+            checkBuiltInFormat(values[i] + ": " + choicePattern, new Object[] {values[i]}, availableLocales);
         }
     }
 
@@ -231,7 +229,7 @@ public class ExtendedMessageFormatTest extends TestCase {
         cal.set(2007, Calendar.JANUARY, 23);
         Object[] args = new Object[] {cal.getTime()};
         Locale[] availableLocales = DateFormat.getAvailableLocales();
-        Map<String, ? extends FormatFactory> registry = Collections.singletonMap("date", new OverrideShortDateFormatFactory());
+        Map registry = Collections.singletonMap("date", new OverrideShortDateFormatFactory());
 
         //check the non-overridden builtins:
         checkBuiltInFormat("1: {0,date}", registry,          args, availableLocales);
@@ -268,8 +266,10 @@ public class ExtendedMessageFormatTest extends TestCase {
      * Test equals() and hashcode.
      */
     public void testEqualsHashcode() {
-        Map<String, ? extends FormatFactory> registry = Collections.singletonMap("testfmt", new LowerCaseFormatFactory());
-        Map<String, ? extends FormatFactory> otherRegitry = Collections.singletonMap("testfmt", new UpperCaseFormatFactory());
+        Map registry = new HashMap();
+        registry.put("testfmt", new LowerCaseFormatFactory());
+        Map otherRegitry = new HashMap();
+        otherRegitry.put("testfmt", new UpperCaseFormatFactory());
 
         String pattern = "Pattern: {0,testfmt}";
         ExtendedMessageFormat emf = new ExtendedMessageFormat(pattern, Locale.US, registry);
@@ -323,10 +323,10 @@ public class ExtendedMessageFormatTest extends TestCase {
      * @param args MessageFormat arguments
      * @param locales to test
      */
-    private void checkBuiltInFormat(String pattern, Map<String, ?> registry, Object[] args, Locale[] locales) {
+    private void checkBuiltInFormat(String pattern, Map registry, Object[] args, Locale[] locales) {
         checkBuiltInFormat(pattern, registry, args, (Locale) null);
-        for (Locale locale : locales) {
-            checkBuiltInFormat(pattern, registry, args, locale);
+        for (int i = 0; i < locales.length; i++) {
+            checkBuiltInFormat(pattern, registry, args, locales[i]);
         }
     }
 
@@ -338,7 +338,7 @@ public class ExtendedMessageFormatTest extends TestCase {
      * @param args Object[]
      * @param locale Locale
      */
-    private void checkBuiltInFormat(String pattern, Map<String, ?> registry, Object[] args, Locale locale) {
+    private void checkBuiltInFormat(String pattern, Map registry, Object[] args, Locale locale) {
         StringBuffer buffer = new StringBuffer();
         buffer.append("Pattern=[");
         buffer.append(pattern);
@@ -359,7 +359,7 @@ public class ExtendedMessageFormatTest extends TestCase {
 
     //can't trust what MessageFormat does with toPattern() pre 1.4:
     private void assertPatternsEqual(String message, String expected, String actual) {
-        if (SystemUtils.isJavaVersionAtLeast(JAVA_1_4)) {
+        if (SystemUtils.isJavaVersionAtLeast(1.4f)) {
             assertEquals(message, expected, actual);
         }
     }
@@ -385,11 +385,9 @@ public class ExtendedMessageFormatTest extends TestCase {
      * {@link Format} implementation which converts to lower case.
      */
     private static class LowerCaseFormat extends Format {
-        @Override
         public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
             return toAppendTo.append(((String)obj).toLowerCase());
         }
-        @Override
         public Object parseObject(String source, ParsePosition pos) {throw new UnsupportedOperationException();}
     }
 
@@ -397,11 +395,9 @@ public class ExtendedMessageFormatTest extends TestCase {
      * {@link Format} implementation which converts to upper case.
      */
     private static class UpperCaseFormat extends Format {
-        @Override
         public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
             return toAppendTo.append(((String)obj).toUpperCase());
         }
-        @Override
         public Object parseObject(String source, ParsePosition pos) {throw new UnsupportedOperationException();}
     }
 
@@ -442,7 +438,7 @@ public class ExtendedMessageFormatTest extends TestCase {
      */
     private static class OtherExtendedMessageFormat extends ExtendedMessageFormat {
         public OtherExtendedMessageFormat(String pattern, Locale locale,
-                Map<String, ? extends FormatFactory> registry) {
+                Map registry) {
             super(pattern, locale, registry);
         }
         

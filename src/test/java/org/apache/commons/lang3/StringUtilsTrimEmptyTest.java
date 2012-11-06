@@ -16,12 +16,16 @@
  */
 package org.apache.commons.lang3;
 
+import org.apache.commons.lang3.StringUtils;
+
 import junit.framework.TestCase;
 
 /**
  * Unit tests {@link org.apache.commons.lang3.StringUtils} - Trim/Empty methods
  *
- * @version $Id: StringUtilsTrimEmptyTest.java 1132845 2011-06-07 00:50:50Z sebb $
+ * @author Apache Software Foundation
+ * @author <a href="mailto:ridesmet@users.sourceforge.net">Ringo De Smet</a>
+ * @version $Id: StringUtilsTrimEmptyTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class StringUtilsTrimEmptyTest extends TestCase {
     private static final String FOO = "foo";
@@ -64,6 +68,16 @@ public class StringUtilsTrimEmptyTest extends TestCase {
     }
 
     //-----------------------------------------------------------------------
+    public void testDeprecatedClean() {
+        assertEquals(FOO, StringUtils.clean(FOO + "  "));
+        assertEquals(FOO, StringUtils.clean(" " + FOO + "  "));
+        assertEquals(FOO, StringUtils.clean(" " + FOO));
+        assertEquals(FOO, StringUtils.clean(FOO + ""));
+        assertEquals("", StringUtils.clean(" \t\r\n\b "));
+        assertEquals("", StringUtils.clean(""));
+        assertEquals("", StringUtils.clean(null));
+    }
+
     public void testTrim() {
         assertEquals(FOO, StringUtils.trim(FOO + "  "));
         assertEquals(FOO, StringUtils.trim(" " + FOO + "  "));
@@ -230,12 +244,7 @@ public class StringUtilsTrimEmptyTest extends TestCase {
         String[] fooDots = new String[] { ".."+FOO+"..", ".."+FOO, FOO+".." };
         String[] foo = new String[] { FOO, FOO, FOO };
 
-//        assertEquals(null, StringUtils.stripAll(null)); // generates warning
-        assertEquals(null, StringUtils.stripAll((String[]) null)); // equivalent explicit cast
-        // Additional varargs tests
-        assertArrayEquals(empty, StringUtils.stripAll()); // empty array
-        assertArrayEquals(new String[]{null}, StringUtils.stripAll((String) null)); // == new String[]{null}
-
+        assertEquals(null, StringUtils.stripAll(null));
         assertArrayEquals(empty, StringUtils.stripAll(empty));
         assertArrayEquals(foo, StringUtils.stripAll(fooSpace));
         
@@ -243,25 +252,6 @@ public class StringUtilsTrimEmptyTest extends TestCase {
         assertArrayEquals(foo, StringUtils.stripAll(fooSpace, null));
         assertArrayEquals(foo, StringUtils.stripAll(fooDots, "."));
     }
-
-    public void testStripAccents() {
-        String cue = "\u00C7\u00FA\u00EA";
-        assertEquals( "Failed to strip accents from " + cue, "Cue", StringUtils.stripAccents(cue));
-
-        String lots = "\u00C0\u00C1\u00C2\u00C3\u00C4\u00C5\u00C7\u00C8\u00C9" + 
-                      "\u00CA\u00CB\u00CC\u00CD\u00CE\u00CF\u00D1\u00D2\u00D3" + 
-                      "\u00D4\u00D5\u00D6\u00D9\u00DA\u00DB\u00DC\u00DD";
-        assertEquals( "Failed to strip accents from " + lots, 
-                      "AAAAAACEEEEIIIINOOOOOUUUUY", 
-                      StringUtils.stripAccents(lots));
-
-        assertNull( "Failed null safety", StringUtils.stripAccents(null) );
-        assertEquals( "Failed empty String", "", StringUtils.stripAccents("") );
-        assertEquals( "Failed to handle non-accented text", "control", StringUtils.stripAccents("control") );
-        assertEquals( "Failed to handle easy example", "eclair", StringUtils.stripAccents("\u00E9clair") );
-    }
-
-    //-----------------------------------------------------------------------
 
     private void assertArrayEquals(Object[] o1, Object[] o2) {
         if(o1 == null) {

@@ -19,24 +19,27 @@ package org.apache.commons.lang3;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import junit.framework.TestCase;
 
 /**
  * Tests ArrayUtils add methods.
  *
- * @version $Id: ArrayUtilsAddTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Gary D. Gregory
+ * @version $Id: ArrayUtilsAddTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class ArrayUtilsAddTest extends TestCase {
 
     public void testJira567(){
         Number[] n;
         // Valid array construction
-        n = ArrayUtils.addAll(new Number[]{Integer.valueOf(1)}, new Long[]{Long.valueOf(2)});
+        n = (Number[])ArrayUtils.addAll(new Number[]{new Integer(1)}, new Long[]{new Long(2)});
         assertEquals(2,n.length);
         assertEquals(Number.class,n.getClass().getComponentType());
         try {
             // Invalid - can't store Long in Integer array
-               n = ArrayUtils.addAll(new Integer[]{Integer.valueOf(1)}, new Long[]{Long.valueOf(2)});
+               n = (Number[])ArrayUtils.addAll(new Integer[]{new Integer(1)}, new Long[]{new Long(2)});
                fail("Should have generated IllegalArgumentException");
         } catch (IllegalArgumentException expected) {
         }
@@ -177,18 +180,14 @@ public class ArrayUtilsAddTest extends TestCase {
 
     public void testAddObjectArrayObject() {
         Object[] newArray;
+        newArray = ArrayUtils.add((Object[])null, null);
+        assertTrue(Arrays.equals((new Object[]{null}), newArray));
+        assertEquals(Object.class, newArray.getClass().getComponentType());
 
-        //show that not casting is okay
         newArray = ArrayUtils.add((Object[])null, "a");
         assertTrue(Arrays.equals((new String[]{"a"}), newArray));
         assertTrue(Arrays.equals((new Object[]{"a"}), newArray));
         assertEquals(String.class, newArray.getClass().getComponentType());
-
-        //show that not casting to Object[] is okay and will assume String based on "a"
-        String[] newStringArray = ArrayUtils.add(null, "a");
-        assertTrue(Arrays.equals((new String[]{"a"}), newStringArray));
-        assertTrue(Arrays.equals((new Object[]{"a"}), newStringArray));
-        assertEquals(String.class, newStringArray.getClass().getComponentType());
 
         String[] stringArray1 = new String[]{"a", "b", "c"};
         newArray = ArrayUtils.add(stringArray1, null);
@@ -208,27 +207,13 @@ public class ArrayUtilsAddTest extends TestCase {
         newArray = ArrayUtils.add(numberArray1, new Float(3));
         assertTrue(Arrays.equals((new Float[]{new Float(3)}), newArray));
         assertEquals(Float.class, newArray.getClass().getComponentType());
+
+        numberArray1 = null;
+        newArray = ArrayUtils.add(numberArray1, null);
+        assertTrue(Arrays.equals((new Object[]{null}), newArray));
+        assertEquals(Object.class, newArray.getClass().getComponentType());
     }
     
-    public void testLANG571(){
-        String[] stringArray=null;
-        String aString=null;
-        try {
-            @SuppressWarnings("unused")
-            String[] sa = ArrayUtils.add(stringArray, aString);
-            fail("Should have caused IllegalArgumentException");
-        } catch (IllegalArgumentException iae){
-            //expected
-        }
-        try {
-            @SuppressWarnings("unused")
-            String[] sa = ArrayUtils.add(stringArray, 0, aString);
-            fail("Should have caused IllegalArgumentException");
-        } catch (IllegalArgumentException iae){
-            //expected
-        }
-    }
-
     public void testAddObjectArrayToObjectArray() {
         assertNull(ArrayUtils.addAll((Object[]) null, (Object[]) null));
         Object[] newArray;
@@ -348,6 +333,9 @@ public class ArrayUtilsAddTest extends TestCase {
 
     public void testAddObjectAtIndex() {
         Object[] newArray;
+        newArray = ArrayUtils.add((Object[])null, 0, null);
+        assertTrue(Arrays.equals((new Object[]{null}), newArray));
+        assertEquals(Object.class, newArray.getClass().getComponentType());
         newArray = ArrayUtils.add((Object[])null, 0, "a");
         assertTrue(Arrays.equals((new String[]{"a"}), newArray));
         assertTrue(Arrays.equals((new Object[]{"a"}), newArray));

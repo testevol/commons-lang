@@ -16,12 +16,17 @@
  */
 package org.apache.commons.lang3;
 
+import org.apache.commons.lang3.BitField;
+
 import junit.framework.TestCase;
 
 /**
  * Class to test BitField functionality
  *
- * @version $Id: BitFieldTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Scott Sanders
+ * @author Marc Johnson
+ * @author Glen Stampoultzis
+ * @version $Id: BitFieldTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class BitFieldTest extends TestCase {
 

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,7 +26,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 
 /**
- * <p>Assists with the serialization process and performs additional functionality based
+ * <p>Assists with the serialization process and performs additional functionality based 
  * on serialization.</p>
  * <p>
  * <ul>
@@ -35,18 +35,24 @@ import java.io.Serializable;
  * <li>Deserialize managing finally and IOException
  * </ul>
  *
- * <p>This class throws exceptions for invalid {@code null} inputs.
+ * <p>This class throws exceptions for invalid <code>null</code> inputs.
  * Each method documents its behaviour in more detail.</p>
  *
  * <p>#ThreadSafe#</p>
+ * @author Apache Software Foundation
+ * @author <a href="mailto:nissim@nksystems.com">Nissim Karpenstein</a>
+ * @author <a href="mailto:janekdb@yahoo.co.uk">Janek Bogucki</a>
+ * @author Daniel L. Rall
+ * @author Jeff Varszegi
+ * @author Gary Gregory
  * @since 1.0
- * @version $Id: SerializationUtils.java 1089736 2011-04-07 04:39:33Z bayard $
+ * @version $Id: SerializationUtils.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class SerializationUtils {
-
+    
     /**
      * <p>SerializationUtils instances should NOT be constructed in standard programming.
-     * Instead, the class should be used as {@code SerializationUtils.clone(object)}.</p>
+     * Instead, the class should be used as <code>SerializationUtils.clone(object)</code>.</p>
      *
      * <p>This constructor is public to permit tools that require a JavaBean instance
      * to operate.</p>
@@ -59,45 +65,37 @@ public class SerializationUtils {
     // Clone
     //-----------------------------------------------------------------------
     /**
-     * <p>Deep clone an {@code Object} using serialization.</p>
+     * <p>Deep clone an <code>Object</code> using serialization.</p>
      *
      * <p>This is many times slower than writing clone methods by hand
      * on all objects in your object graph. However, for complex object
      * graphs, or for those that don't support deep cloning this can
      * be a simple alternative implementation. Of course all the objects
-     * must be {@code Serializable}.</p>
-     *
-     * @param <T> the type of the object involved
-     * @param object  the {@code Serializable} object to clone
+     * must be <code>Serializable</code>.</p>
+     * 
+     * @param object  the <code>Serializable</code> object to clone
      * @return the cloned object
      * @throws SerializationException (runtime) if the serialization fails
      */
-    public static <T extends Serializable> T clone(T object) {
-        /*
-         * when we serialize and deserialize an object,
-         * it is reasonable to assume the deserialized object
-         * is of the same type as the original serialized object
-         */
-        @SuppressWarnings("unchecked")
-        final T result = (T) deserialize(serialize(object));
-        return result;
+    public static Object clone(Serializable object) {
+        return deserialize(serialize(object));
     }
-
+    
     // Serialize
     //-----------------------------------------------------------------------
     /**
-     * <p>Serializes an {@code Object} to the specified stream.</p>
+     * <p>Serializes an <code>Object</code> to the specified stream.</p>
      *
      * <p>The stream will be closed once the object is written.
      * This avoids the need for a finally clause, and maybe also exception
      * handling, in the application code.</p>
-     *
+     * 
      * <p>The stream passed in is not buffered internally within this method.
      * This is the responsibility of your application if desired.</p>
      *
      * @param obj  the object to serialize to bytes, may be null
      * @param outputStream  the stream to write to, must not be null
-     * @throws IllegalArgumentException if {@code outputStream} is {@code null}
+     * @throws IllegalArgumentException if <code>outputStream</code> is <code>null</code>
      * @throws SerializationException (runtime) if the serialization fails
      */
     public static void serialize(Serializable obj, OutputStream outputStream) {
@@ -109,7 +107,7 @@ public class SerializationUtils {
             // stream closed in the finally
             out = new ObjectOutputStream(outputStream);
             out.writeObject(obj);
-
+            
         } catch (IOException ex) {
             throw new SerializationException(ex);
         } finally {
@@ -117,14 +115,14 @@ public class SerializationUtils {
                 if (out != null) {
                     out.close();
                 }
-            } catch (IOException ex) { // NOPMD
+            } catch (IOException ex) {
                 // ignore close exception
             }
         }
     }
 
     /**
-     * <p>Serializes an {@code Object} to a byte array for
+     * <p>Serializes an <code>Object</code> to a byte array for
      * storage/serialization.</p>
      *
      * @param obj  the object to serialize to bytes
@@ -140,18 +138,18 @@ public class SerializationUtils {
     // Deserialize
     //-----------------------------------------------------------------------
     /**
-     * <p>Deserializes an {@code Object} from the specified stream.</p>
+     * <p>Deserializes an <code>Object</code> from the specified stream.</p>
      *
      * <p>The stream will be closed once the object is written. This
      * avoids the need for a finally clause, and maybe also exception
      * handling, in the application code.</p>
-     *
+     * 
      * <p>The stream passed in is not buffered internally within this method.
      * This is the responsibility of your application if desired.</p>
      *
      * @param inputStream  the serialized object input stream, must not be null
      * @return the deserialized object
-     * @throws IllegalArgumentException if {@code inputStream} is {@code null}
+     * @throws IllegalArgumentException if <code>inputStream</code> is <code>null</code>
      * @throws SerializationException (runtime) if the serialization fails
      */
     public static Object deserialize(InputStream inputStream) {
@@ -163,7 +161,7 @@ public class SerializationUtils {
             // stream closed in the finally
             in = new ObjectInputStream(inputStream);
             return in.readObject();
-
+            
         } catch (ClassNotFoundException ex) {
             throw new SerializationException(ex);
         } catch (IOException ex) {
@@ -173,18 +171,18 @@ public class SerializationUtils {
                 if (in != null) {
                     in.close();
                 }
-            } catch (IOException ex) { // NOPMD
+            } catch (IOException ex) {
                 // ignore close exception
             }
         }
     }
 
     /**
-     * <p>Deserializes a single {@code Object} from an array of bytes.</p>
+     * <p>Deserializes a single <code>Object</code> from an array of bytes.</p>
      *
      * @param objectData  the serialized object, must not be null
      * @return the deserialized object
-     * @throws IllegalArgumentException if {@code objectData} is {@code null}
+     * @throws IllegalArgumentException if <code>objectData</code> is <code>null</code>
      * @throws SerializationException (runtime) if the serialization fails
      */
     public static Object deserialize(byte[] objectData) {
@@ -194,5 +192,5 @@ public class SerializationUtils {
         ByteArrayInputStream bais = new ByteArrayInputStream(objectData);
         return deserialize(bais);
     }
-
+    
 }

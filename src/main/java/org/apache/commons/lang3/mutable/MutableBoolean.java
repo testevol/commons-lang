@@ -19,14 +19,17 @@ package org.apache.commons.lang3.mutable;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.BooleanUtils;
+
 /**
  * A mutable <code>boolean</code> wrapper.
  * 
  * @see Boolean
  * @since 2.2
- * @version $Id: MutableBoolean.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @version $Id: MutableBoolean.java 1067685 2011-02-06 15:38:57Z niallp $
  */
-public class MutableBoolean implements Mutable<Boolean>, Serializable, Comparable<MutableBoolean> {
+public class MutableBoolean implements Mutable, Serializable, Comparable {
 
     /**
      * Required for serialization support.
@@ -72,8 +75,8 @@ public class MutableBoolean implements Mutable<Boolean>, Serializable, Comparabl
      * 
      * @return the value as a Boolean, never null
      */
-    public Boolean getValue() {
-        return Boolean.valueOf(this.value);
+    public Object getValue() {
+        return BooleanUtils.toBooleanObject(this.value);
     }
 
     /**
@@ -91,8 +94,8 @@ public class MutableBoolean implements Mutable<Boolean>, Serializable, Comparabl
      * @param value  the value to set, not null
      * @throws NullPointerException if the object is null
      */
-    public void setValue(Boolean value) {
-        this.value = value.booleanValue();
+    public void setValue(Object value) {
+        setValue(((Boolean) value).booleanValue());
     }
 
     //-----------------------------------------------------------------------
@@ -134,7 +137,7 @@ public class MutableBoolean implements Mutable<Boolean>, Serializable, Comparabl
      * @since 2.5
      */
     public Boolean toBoolean() {
-        return Boolean.valueOf(booleanValue());
+        return  BooleanUtils.toBooleanObject(this.value);
     }
 
     //-----------------------------------------------------------------------
@@ -146,7 +149,6 @@ public class MutableBoolean implements Mutable<Boolean>, Serializable, Comparabl
      * @param obj  the object to compare with, null returns false
      * @return <code>true</code> if the objects are the same; <code>false</code> otherwise.
      */
-    @Override
     public boolean equals(Object obj) {
         if (obj instanceof MutableBoolean) {
             return value == ((MutableBoolean) obj).booleanValue();
@@ -159,7 +161,6 @@ public class MutableBoolean implements Mutable<Boolean>, Serializable, Comparabl
      * 
      * @return the hash code returned by <code>Boolean.TRUE</code> or <code>Boolean.FALSE</code>
      */
-    @Override
     public int hashCode() {
         return value ? Boolean.TRUE.hashCode() : Boolean.FALSE.hashCode();
     }
@@ -168,11 +169,12 @@ public class MutableBoolean implements Mutable<Boolean>, Serializable, Comparabl
     /**
      * Compares this mutable to another in ascending order.
      * 
-     * @param other  the other mutable to compare to, not null
+     * @param obj the other mutable to compare to, not null
      * @return negative if this is less, zero if equal, positive if greater
      *  where false is less than true
      */
-    public int compareTo(MutableBoolean other) {
+    public int compareTo(Object obj) {
+        MutableBoolean other = (MutableBoolean) obj;
         boolean anotherVal = other.value;
         return value == anotherVal ? 0 : (value ? 1 : -1);
     }
@@ -183,7 +185,6 @@ public class MutableBoolean implements Mutable<Boolean>, Serializable, Comparabl
      * 
      * @return the mutable value as a string
      */
-    @Override
     public String toString() {
         return String.valueOf(value);
     }

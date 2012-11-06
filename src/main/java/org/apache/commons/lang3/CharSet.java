@@ -20,6 +20,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,8 +30,12 @@ import java.util.Set;
  * <p>Instances are immutable, but instances of subclasses may not be.</p>
  *
  * <p>#ThreadSafe#</p>
+ * @author Apache Software Foundation
+ * @author Phil Steitz
+ * @author Pete Gieser
+ * @author Gary Gregory
  * @since 1.0
- * @version $Id: CharSet.java 1090427 2011-04-08 20:17:10Z bayard $
+ * @version $Id: CharSet.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class CharSet implements Serializable {
 
@@ -76,7 +81,7 @@ public class CharSet implements Serializable {
      * Subclasses can add more common patterns if desired
      * @since 2.0
      */
-    protected static final Map<String, CharSet> COMMON = Collections.synchronizedMap(new HashMap<String, CharSet>());
+    protected static final Map COMMON = Collections.synchronizedMap(new HashMap());
     
     static {
         COMMON.put(null, EMPTY);
@@ -89,14 +94,14 @@ public class CharSet implements Serializable {
     }
 
     /** The set of CharRange objects. */
-    private final Set<CharRange> set = Collections.synchronizedSet(new HashSet<CharRange>());
+    private final Set set = Collections.synchronizedSet(new HashSet());
 
     //-----------------------------------------------------------------------
     /**
      * <p>Factory method to create a new CharSet using a special syntax.</p>
      *
      * <ul>
-     *  <li>{@code null} or empty string ("")
+     *  <li><code>null</code> or empty string ("")
      * - set containing no characters</li>
      *  <li>Single character, such as "a"
      *  - set containing just that character</li>
@@ -131,32 +136,53 @@ public class CharSet implements Serializable {
      *
      * <p>All CharSet objects returned by this method will be immutable.</p>
      *
-     * @param setStrs  Strings to merge into the set, may be null
+     * @param setStr  the String describing the set, may be null
+     * @return a CharSet instance
+     * @since 2.0
+     */
+    public static CharSet getInstance(String setStr) {
+        Object set = COMMON.get(setStr);
+        if (set != null) {
+            return (CharSet) set;
+        }
+        return new CharSet(setStr);
+    }
+
+    /**
+     * <p>Constructs a new CharSet using the set syntax.
+     * Each string is merged in with the set.</p>
+     *
+     * @param setStrs  Strings to merge into the initial set, may be null
      * @return a CharSet instance
      * @since 2.4
      */
-    public static CharSet getInstance(String... setStrs) {
+    public static CharSet getInstance(String[] setStrs) {
         if (setStrs == null) {
             return null;
-        }
-        if (setStrs.length == 1) {
-            CharSet common = COMMON.get(setStrs[0]);
-            if (common != null) {
-                return common;
-            }
         }
         return new CharSet(setStrs); 
     }
 
     //-----------------------------------------------------------------------
     /**
+     * <p>Constructs a new CharSet using the set syntax.</p>
+     *
+     * @param setStr  the String describing the set, may be null
+     * @since 2.0
+     */
+    protected CharSet(String setStr) {
+        super();
+        add(setStr);
+    }
+
+    /**
      * <p>Constructs a new CharSet using the set syntax.
      * Each string is merged in with the set.</p>
      *
      * @param set  Strings to merge into the initial set
-     * @throws NullPointerException if set is {@code null}
+     * @throws NullPointerException if set is <code>null</code>
      */
-    protected CharSet(String... set) {
+    protected CharSet(String[] set) {
         super();
         int sz = set.length;
         for (int i = 0; i < sz; i++) {
@@ -166,7 +192,7 @@ public class CharSet implements Serializable {
 
     //-----------------------------------------------------------------------
     /**
-     * <p>Add a set definition string to the {@code CharSet}.</p>
+     * <p>Add a set definition string to the <code>CharSet</code>.</p>
      *
      * @param str  set definition string
      */
@@ -206,22 +232,21 @@ public class CharSet implements Serializable {
      * @return an array of immutable CharRange objects
      * @since 2.0
      */
-// NOTE: This is no longer public as CharRange is no longer a public class. 
-//       It may be replaced when CharSet moves to Range.
-    /*public*/ CharRange[] getCharRanges() {
-        return set.toArray(new CharRange[set.size()]);
+    public CharRange[] getCharRanges() {
+        return (CharRange[]) set.toArray(new CharRange[set.size()]);
     }
 
     //-----------------------------------------------------------------------
     /**
-     * <p>Does the {@code CharSet} contain the specified
-     * character {@code ch}.</p>
+     * <p>Does the <code>CharSet</code> contain the specified
+     * character <code>ch</code>.</p>
      *
      * @param ch  the character to check for
-     * @return {@code true} if the set contains the characters
+     * @return <code>true</code> if the set contains the characters
      */
     public boolean contains(char ch) {
-        for (CharRange range : set) {
+        for (Iterator it = set.iterator(); it.hasNext();) {
+            CharRange range = (CharRange) it.next();
             if (range.contains(ch)) {
                 return true;
             }
@@ -232,17 +257,16 @@ public class CharSet implements Serializable {
     // Basics
     //-----------------------------------------------------------------------
     /**
-     * <p>Compares two {@code CharSet} objects, returning true if they represent
+     * <p>Compares two CharSet objects, returning true if they represent
      * exactly the same set of characters defined in the same way.</p>
      *
-     * <p>The two sets {@code abc} and {@code a-c} are <i>not</i>
+     * <p>The two sets <code>abc</code> and <code>a-c</code> are <i>not</i>
      * equal according to this method.</p>
      *
      * @param obj  the object to compare to
      * @return true if equal
      * @since 2.0
      */
-    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -255,12 +279,11 @@ public class CharSet implements Serializable {
     }
 
     /**
-     * <p>Gets a hash code compatible with the equals method.</p>
+     * <p>Gets a hashCode compatible with the equals method.</p>
      *
-     * @return a suitable hash code
+     * @return a suitable hashCode
      * @since 2.0
      */
-    @Override
     public int hashCode() {
         return 89 + set.hashCode();
     }
@@ -270,7 +293,6 @@ public class CharSet implements Serializable {
      *
      * @return string representation of the set
      */
-    @Override
     public String toString() {
         return set.toString();
     }

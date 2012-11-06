@@ -17,13 +17,13 @@
 package org.apache.commons.lang3.reflect.testbed;
 
 /**
- * @version $Id: StaticContainer.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author mbenson
+ * @version $Id: StaticContainer.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class StaticContainer {
     public static final Object IMMUTABLE_PUBLIC = "public";
     protected static final Object IMMUTABLE_PROTECTED = "protected";
     static final Object IMMUTABLE_PACKAGE = "";
-    @SuppressWarnings("unused")
     private static final Object IMMUTABLE_PRIVATE = "private";
 
     public static Object mutablePublic;

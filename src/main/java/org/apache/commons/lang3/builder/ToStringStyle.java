@@ -60,15 +60,14 @@ import org.apache.commons.lang3.SystemUtils;
  * </pre>
  * </p>
  *
+ * @author Apache Software Foundation
+ * @author Gary Gregory
+ * @author Pete Gieser
+ * @author Masato Tezuka
  * @since 1.0
- * @version $Id: ToStringStyle.java 1091066 2011-04-11 13:30:11Z mbenson $
+ * @version $Id: ToStringStyle.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public abstract class ToStringStyle implements Serializable {
-
-    /**
-     * Serialization version ID.
-     */
-    private static final long serialVersionUID = -2587890625525655916L;
 
     /**
      * The default toString style. Using the Using the <code>Person</code>
@@ -133,8 +132,7 @@ public abstract class ToStringStyle implements Serializable {
      * to detect cyclical object references and avoid infinite loops.
      * </p>
      */
-    private static final ThreadLocal<WeakHashMap<Object, Object>> REGISTRY =
-        new ThreadLocal<WeakHashMap<Object,Object>>();
+    private static final ThreadLocal REGISTRY = new ThreadLocal();
 
     /**
      * <p>
@@ -144,8 +142,8 @@ public abstract class ToStringStyle implements Serializable {
      *
      * @return Set the registry of objects being traversed
      */
-    static Map<Object, Object> getRegistry() {
-        return REGISTRY.get();
+    static Map getRegistry() {
+        return (Map) REGISTRY.get();
     }
 
     /**
@@ -160,7 +158,7 @@ public abstract class ToStringStyle implements Serializable {
      *             object.
      */
     static boolean isRegistered(Object value) {
-        Map<Object, Object> m = getRegistry();
+        Map m = getRegistry();
         return m != null && m.containsKey(value);
     }
 
@@ -175,11 +173,12 @@ public abstract class ToStringStyle implements Serializable {
      */
     static void register(Object value) {
         if (value != null) {
-            Map<Object, Object> m = getRegistry();
+            Map m = getRegistry();
             if (m == null) {
-                REGISTRY.set(new WeakHashMap<Object, Object>());
+                m = new WeakHashMap();
+                REGISTRY.set(m);
             }
-            getRegistry().put(value, null);
+            m.put(value, null);
         }
     }
 
@@ -197,11 +196,11 @@ public abstract class ToStringStyle implements Serializable {
      */
     static void unregister(Object value) {
         if (value != null) {
-            Map<Object, Object> m = getRegistry();
+            Map m = getRegistry();
             if (m != null) {
                 m.remove(value);
                 if (m.isEmpty()) {
-                    REGISTRY.remove();
+                    REGISTRY.set(null);
                 }
             }
         }
@@ -468,18 +467,18 @@ public abstract class ToStringStyle implements Serializable {
         register(value);
 
         try {
-            if (value instanceof Collection<?>) {
+            if (value instanceof Collection) {
                 if (detail) {
-                    appendDetail(buffer, fieldName, (Collection<?>) value);
+                    appendDetail(buffer, fieldName, (Collection) value);
                 } else {
-                    appendSummarySize(buffer, fieldName, ((Collection<?>) value).size());
+                    appendSummarySize(buffer, fieldName, ((Collection) value).size());
                 }
 
-            } else if (value instanceof Map<?, ?>) {
+            } else if (value instanceof Map) {
                 if (detail) {
-                    appendDetail(buffer, fieldName, (Map<?, ?>) value);
+                    appendDetail(buffer, fieldName, (Map) value);
                 } else {
-                    appendSummarySize(buffer, fieldName, ((Map<?, ?>) value).size());
+                    appendSummarySize(buffer, fieldName, ((Map) value).size());
                 }
 
             } else if (value instanceof long[]) {
@@ -546,11 +545,11 @@ public abstract class ToStringStyle implements Serializable {
                 }
 
             } else {
-                if (detail) {
-                    appendDetail(buffer, fieldName, value);
-                } else {
-                    appendSummary(buffer, fieldName, value);
-                }
+                    if (detail) {
+                        appendDetail(buffer, fieldName, value);
+                    } else {
+                        appendSummary(buffer, fieldName, value);
+                    }
             }
         } finally {
             unregister(value);
@@ -594,7 +593,7 @@ public abstract class ToStringStyle implements Serializable {
      * @param coll  the <code>Collection</code> to add to the
      *  <code>toString</code>, not <code>null</code>
      */
-    protected void appendDetail(StringBuffer buffer, String fieldName, Collection<?> coll) {
+    protected void appendDetail(StringBuffer buffer, String fieldName, Collection coll) {
         buffer.append(coll);
     }
 
@@ -606,7 +605,7 @@ public abstract class ToStringStyle implements Serializable {
      * @param map  the <code>Map</code> to add to the <code>toString</code>,
      *  not <code>null</code>
      */
-    protected void appendDetail(StringBuffer buffer, String fieldName, Map<?, ?> map) {
+    protected void appendDetail(StringBuffer buffer, String fieldName, Map map) {
         buffer.append(map);
     }
 
@@ -1577,7 +1576,7 @@ public abstract class ToStringStyle implements Serializable {
      * @param cls  the <code>Class</code> to get the short name of
      * @return the short name
      */
-    protected String getShortClassName(Class<?> cls) {
+    protected String getShortClassName(Class cls) {
         return ClassUtils.getShortClassName(cls);
     }
 
@@ -1617,6 +1616,17 @@ public abstract class ToStringStyle implements Serializable {
     }
 
     /**
+     * <p>Gets whether to output short or long class names.</p>
+     *
+     * @return the current shortClassName flag
+     * @deprecated Use {@link #isUseShortClassName()}
+     *             Method will be removed in Commons Lang 3.0.
+     */
+    protected boolean isShortClassName() {
+        return useShortClassName;
+    }
+
+    /**
      * <p>Sets whether to output short or long class names.</p>
      *
      * @param useShortClassName  the new useShortClassName flag
@@ -1624,6 +1634,17 @@ public abstract class ToStringStyle implements Serializable {
      */
     protected void setUseShortClassName(boolean useShortClassName) {
         this.useShortClassName = useShortClassName;
+    }
+
+    /**
+     * <p>Sets whether to output short or long class names.</p>
+     *
+     * @param shortClassName  the new shortClassName flag
+     * @deprecated Use {@link #setUseShortClassName(boolean)}
+     *             Method will be removed in Commons Lang 3.0.
+     */
+    protected void setShortClassName(boolean shortClassName) {
+        this.useShortClassName = shortClassName;
     }
 
     //---------------------------------------------------------------------

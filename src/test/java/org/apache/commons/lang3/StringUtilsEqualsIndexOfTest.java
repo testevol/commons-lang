@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,15 +18,19 @@ package org.apache.commons.lang3;
 
 import java.util.Locale;
 
+import org.apache.commons.lang3.StringUtils;
+
 import junit.framework.TestCase;
 
 /**
  * Unit tests {@link org.apache.commons.lang3.StringUtils} - Substring methods
  *
- * @version $Id: StringUtilsEqualsIndexOfTest.java 1144929 2011-07-10 18:26:16Z ggregory $
+ * @author Apache Software Foundation
+ * @author <a href="mailto:ridesmet@users.sourceforge.net">Ringo De Smet</a>
+ * @author Phil Steitz
+ * @version $Id: StringUtilsEqualsIndexOfTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class StringUtilsEqualsIndexOfTest extends TestCase {
-    private static final String BAR = "bar";
     /**
      * Supplementary character U+20000
      * See http://java.sun.com/developer/technicalArticles/Intl/Supplementary/
@@ -50,9 +54,8 @@ public class StringUtilsEqualsIndexOfTest extends TestCase {
     private static final String CharUSuppCharLow = "\uD840";
 
     private static final String FOO = "foo";
-
+    private static final String BAR = "bar";
     private static final String FOOBAR = "foobar";
-
     private static final String[] FOOBAR_SUB_ARRAY = new String[] {"ob", "ba"};
 
     public StringUtilsEqualsIndexOfTest(String name) {
@@ -205,7 +208,7 @@ public class StringUtilsEqualsIndexOfTest extends TestCase {
     public void testContainsIgnoreCase_LocaleIndependence() {
         Locale orig = Locale.getDefault();
 
-        Locale[] locales = { Locale.ENGLISH, new Locale("tr"), Locale.getDefault() };
+        Locale[] locales = { Locale.ENGLISH, new Locale("tr", "", ""), Locale.getDefault() };
 
         String[][] tdata = {
             { "i", "I" },
@@ -220,8 +223,8 @@ public class StringUtilsEqualsIndexOfTest extends TestCase {
         };
 
         try {
-            for (Locale locale : locales) {
-                Locale.setDefault(locale);
+            for (int i = 0; i < locales.length; i++) {
+                Locale.setDefault(locales[i]);
                 for (int j = 0; j < tdata.length; j++) {
                     assertTrue(Locale.getDefault() + ": " + j + " " + tdata[j][0] + " " + tdata[j][1], StringUtils
                             .containsIgnoreCase(tdata[j][0], tdata[j][1]));
@@ -428,16 +431,6 @@ public class StringUtilsEqualsIndexOfTest extends TestCase {
         assertEquals(true, StringUtils.containsOnly(str3, chars3));
     }
 
-    public void testContainsWhitespace() {
-        assertFalse( StringUtils.containsWhitespace("") );
-        assertTrue( StringUtils.containsWhitespace(" ") );
-        assertFalse( StringUtils.containsWhitespace("a") );
-        assertTrue( StringUtils.containsWhitespace("a ") );
-        assertTrue( StringUtils.containsWhitespace(" a") );
-        assertTrue( StringUtils.containsWhitespace("a\t") );
-        assertTrue( StringUtils.containsWhitespace("\n") );
-    }
-
     public void testEquals() {
         assertEquals(true, StringUtils.equals(null, null));
         assertEquals(true, StringUtils.equals(FOO, FOO));
@@ -464,8 +457,6 @@ public class StringUtilsEqualsIndexOfTest extends TestCase {
         assertEquals(-1, StringUtils.indexOf("", ' '));
         assertEquals(0, StringUtils.indexOf("aabaabaa", 'a'));
         assertEquals(2, StringUtils.indexOf("aabaabaa", 'b'));
-
-        assertEquals(2, StringUtils.indexOf(new StringBuilder("aabaabaa"), 'b'));
     }
 
     public void testIndexOf_charInt() {
@@ -478,8 +469,6 @@ public class StringUtilsEqualsIndexOfTest extends TestCase {
         assertEquals(5, StringUtils.indexOf("aabaabaa", 'b', 3));
         assertEquals(-1, StringUtils.indexOf("aabaabaa", 'b', 9));
         assertEquals(2, StringUtils.indexOf("aabaabaa", 'b', -1));
-
-        assertEquals(5, StringUtils.indexOf(new StringBuilder("aabaabaa"), 'b', 3));
     }
 
     public void testIndexOf_String() {
@@ -490,8 +479,6 @@ public class StringUtilsEqualsIndexOfTest extends TestCase {
         assertEquals(2, StringUtils.indexOf("aabaabaa", "b"));
         assertEquals(1, StringUtils.indexOf("aabaabaa", "ab"));
         assertEquals(0, StringUtils.indexOf("aabaabaa", ""));
-
-        assertEquals(2, StringUtils.indexOf(new StringBuilder("aabaabaa"), "b"));
     }
 
     public void testIndexOf_StringInt() {
@@ -515,8 +502,6 @@ public class StringUtilsEqualsIndexOfTest extends TestCase {
         assertEquals(-1, StringUtils.indexOf("aabaabaa", "b", 9));
         assertEquals(2, StringUtils.indexOf("aabaabaa", "b", -1));
         assertEquals(2,StringUtils.indexOf("aabaabaa", "", 2));
-
-        assertEquals(5, StringUtils.indexOf(new StringBuilder("aabaabaa"), "b", 3));
     }
 
     public void testIndexOfAny_StringCharArray() {
@@ -672,8 +657,6 @@ public class StringUtilsEqualsIndexOfTest extends TestCase {
         assertEquals(-1, StringUtils.lastIndexOf("", ' '));
         assertEquals(7, StringUtils.lastIndexOf("aabaabaa", 'a'));
         assertEquals(5, StringUtils.lastIndexOf("aabaabaa", 'b'));
-
-        assertEquals(5, StringUtils.lastIndexOf(new StringBuilder("aabaabaa"), 'b'));
     }
 
     public void testLastIndexOf_charInt() {
@@ -687,8 +670,6 @@ public class StringUtilsEqualsIndexOfTest extends TestCase {
         assertEquals(5, StringUtils.lastIndexOf("aabaabaa", 'b', 9));
         assertEquals(-1, StringUtils.lastIndexOf("aabaabaa", 'b', -1));
         assertEquals(0, StringUtils.lastIndexOf("aabaabaa", 'a', 0));
-
-        assertEquals(2, StringUtils.lastIndexOf(new StringBuilder("aabaabaa"), 'b', 2));
     }
 
     public void testLastIndexOf_String() {
@@ -700,8 +681,6 @@ public class StringUtilsEqualsIndexOfTest extends TestCase {
         assertEquals(7, StringUtils.lastIndexOf("aabaabaa", "a"));
         assertEquals(5, StringUtils.lastIndexOf("aabaabaa", "b"));
         assertEquals(4, StringUtils.lastIndexOf("aabaabaa", "ab"));
-
-        assertEquals(4, StringUtils.lastIndexOf(new StringBuilder("aabaabaa"), "ab"));
     }
 
     public void testLastIndexOf_StringInt() {
@@ -725,18 +704,12 @@ public class StringUtilsEqualsIndexOfTest extends TestCase {
         assertEquals(-1, StringUtils.lastIndexOf("aabaabaa", "b", -1));
         assertEquals(-1, StringUtils.lastIndexOf("aabaabaa", "b", 0));
         assertEquals(0, StringUtils.lastIndexOf("aabaabaa", "a", 0));
-
-        assertEquals(2, StringUtils.lastIndexOf(new StringBuilder("aabaabaa"), "b", 3));
     }
 
     public void testLastIndexOfAny_StringStringArray() {
-        assertEquals(-1, StringUtils.lastIndexOfAny(null, (CharSequence) null));   // test both types of ...
-        assertEquals(-1, StringUtils.lastIndexOfAny(null, (CharSequence[]) null)); // ... varargs invocation
-        assertEquals(-1, StringUtils.lastIndexOfAny(null)); // Missing varag
+        assertEquals(-1, StringUtils.lastIndexOfAny(null, null));
         assertEquals(-1, StringUtils.lastIndexOfAny(null, FOOBAR_SUB_ARRAY));
-        assertEquals(-1, StringUtils.lastIndexOfAny(FOOBAR, (CharSequence) null));   // test both types of ...
-        assertEquals(-1, StringUtils.lastIndexOfAny(FOOBAR, (CharSequence[]) null)); // ... varargs invocation
-        assertEquals(-1, StringUtils.lastIndexOfAny(FOOBAR)); // Missing vararg
+        assertEquals(-1, StringUtils.lastIndexOfAny(FOOBAR, null));
         assertEquals(3, StringUtils.lastIndexOfAny(FOOBAR, FOOBAR_SUB_ARRAY));
         assertEquals(-1, StringUtils.lastIndexOfAny(FOOBAR, new String[0]));
         assertEquals(-1, StringUtils.lastIndexOfAny(null, new String[0]));

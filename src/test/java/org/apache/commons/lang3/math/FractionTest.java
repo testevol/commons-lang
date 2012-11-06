@@ -23,7 +23,9 @@ import junit.framework.TestCase;
 /**
  * Test cases for the {@link Fraction} class
  *
- * @version $Id: FractionTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @author C. Scott Ananian
+ * @version $Id: FractionTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class FractionTest extends TestCase {
     
@@ -328,11 +330,6 @@ public class FractionTest extends TestCase {
             f = Fraction.getReducedFraction(-7, Integer.MIN_VALUE);  
             fail("Expecting ArithmeticException");
         } catch (ArithmeticException ex) {}      
-
-        // LANG-662
-        f = Fraction.getReducedFraction(Integer.MIN_VALUE, 2);
-        assertEquals(Integer.MIN_VALUE / 2, f.getNumerator());
-        assertEquals(1, f.getDenominator());
     }
 
     public void testFactory_double() {
@@ -646,11 +643,6 @@ public class FractionTest extends TestCase {
         assertEquals(0, result.getNumerator());
         assertEquals(1, result.getDenominator());
         assertSame(result, Fraction.ZERO);
-
-        f = Fraction.getFraction(Integer.MIN_VALUE, 2);
-        result = f.reduce();
-        assertEquals(Integer.MIN_VALUE / 2, result.getNumerator());
-        assertEquals(1, result.getDenominator());
     }
     
     public void testInvert() {
@@ -1259,6 +1251,11 @@ public class FractionTest extends TestCase {
             f1.compareTo(null);
             fail("expecting NullPointerException");
         } catch (NullPointerException ex) {}
+        
+        try {
+            f1.compareTo(new Object());
+            fail("expecting ClassCastException");
+        } catch (ClassCastException ex) {}
         
         f2 = Fraction.getFraction(2, 5);
         assertTrue(f1.compareTo(f2) > 0);

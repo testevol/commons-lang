@@ -22,7 +22,8 @@ package org.apache.commons.lang3.math;
  * <p>See: <a href="http://en.wikipedia.org/wiki/IEEE_754r">http://en.wikipedia.org/wiki/IEEE_754r</a></p>
  *
  * @since 2.4
- * @version $Id: IEEE754rUtils.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @version $Id: IEEE754rUtils.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class IEEE754rUtils {
     

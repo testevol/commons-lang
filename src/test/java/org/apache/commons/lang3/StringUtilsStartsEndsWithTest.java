@@ -16,14 +16,14 @@
  */
 package org.apache.commons.lang3;
 
-import junit.framework.TestCase;
+import org.apache.commons.lang3.StringUtils;
 
-import org.apache.commons.lang3.text.StrBuilder;
+import junit.framework.TestCase;
 
 /**
  * Unit tests {@link org.apache.commons.lang3.StringUtils} - StartsWith/EndsWith methods
  *
- * @version $Id: StringUtilsStartsEndsWithTest.java 1144929 2011-07-10 18:26:16Z ggregory $
+ * @version $Id: StringUtilsStartsEndsWithTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class StringUtilsStartsEndsWithTest extends TestCase {
     private static final String foo    = "foo";
@@ -85,19 +85,6 @@ public class StringUtilsStartsEndsWithTest extends TestCase {
         assertFalse("startsWithIgnoreCase(FOOBAR, bar)", StringUtils.startsWithIgnoreCase(FOOBAR, bar));
     }
 
-    public void testStartsWithAny() {
-        assertFalse(StringUtils.startsWithAny(null, (String[])null));
-        assertFalse(StringUtils.startsWithAny(null, "abc"));
-        assertFalse(StringUtils.startsWithAny("abcxyz", (String[])null));
-        assertFalse(StringUtils.startsWithAny("abcxyz"));
-        assertTrue(StringUtils.startsWithAny("abcxyz", "abc"));
-        assertTrue(StringUtils.startsWithAny("abcxyz", null, "xyz", "abc"));
-        assertFalse(StringUtils.startsWithAny("abcxyz", null, "xyz", "abcd"));
-
-        assertTrue("StringUtils.startsWithAny(abcxyz, StringBuilder(xyz), StringBuffer(abc))", StringUtils.startsWithAny("abcxyz", new StringBuilder("xyz"), new StringBuffer("abc")));
-        assertTrue("StringUtils.startsWithAny( StrBuilder(abcxyz), StringBuilder(xyz), StringBuffer(abc))", StringUtils.startsWithAny( new StrBuilder("abcxyz"), new StringBuilder("xyz"), new StringBuffer("abc")));
-    }
- 
 
     /**
      * Test StringUtils.endsWith()
@@ -151,16 +138,14 @@ public class StringUtilsStartsEndsWithTest extends TestCase {
     }
 
     public void testEndsWithAny() {
-        assertFalse("StringUtils.endsWithAny(null, null)", StringUtils.endsWithAny(null, (String)null));
+        assertFalse("StringUtils.endsWithAny(null, null)", StringUtils.endsWithAny(null, null));
         assertFalse("StringUtils.endsWithAny(null, new String[] {abc})", StringUtils.endsWithAny(null, new String[] {"abc"}));
-        assertFalse("StringUtils.endsWithAny(abcxyz, null)", StringUtils.endsWithAny("abcxyz", (String)null));
+        assertFalse("StringUtils.endsWithAny(abcxyz, null)", StringUtils.endsWithAny("abcxyz", null));
         assertTrue("StringUtils.endsWithAny(abcxyz, new String[] {\"\"})", StringUtils.endsWithAny("abcxyz", new String[] {""}));
         assertTrue("StringUtils.endsWithAny(abcxyz, new String[] {xyz})", StringUtils.endsWithAny("abcxyz", new String[] {"xyz"}));
         assertTrue("StringUtils.endsWithAny(abcxyz, new String[] {null, xyz, abc})", StringUtils.endsWithAny("abcxyz", new String[] {null, "xyz", "abc"}));
         assertFalse("StringUtils.endsWithAny(defg, new String[] {null, xyz, abc})", StringUtils.endsWithAny("defg", new String[] {null, "xyz", "abc"}));
 
-        assertTrue("StringUtils.endsWithAny(abcxyz, StringBuilder(abc), StringBuffer(xyz))", StringUtils.endsWithAny("abcxyz", new StringBuilder("abc"), new StringBuffer("xyz")));
-        assertTrue("StringUtils.endsWithAny( StrBuilder(abcxyz), StringBuilder(abc), StringBuffer(xyz))", StringUtils.endsWithAny( new StrBuilder("abcxyz"), new StringBuilder("abc"), new StringBuffer("xyz")));
     }
 
 

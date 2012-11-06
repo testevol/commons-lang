@@ -18,6 +18,8 @@ package org.apache.commons.lang3.math;
 
 import java.math.BigInteger;
 
+import org.apache.commons.lang3.text.StrBuilder;
+
 /**
  * <p><code>Fraction</code> is a <code>Number</code> implementation that
  * stores fractions accurately.</p>
@@ -25,14 +27,15 @@ import java.math.BigInteger;
  * <p>This class is immutable, and interoperable with most methods that accept
  * a <code>Number</code>.</p>
  *
- * <p>Note that this class is intended for common use cases, it is <i>int</i>
- * based and thus suffers from various overflow issues. For a BigInteger based 
- * equivalent, please see the Commons Math BigFraction class. </p>
- *
+ * @author Apache Software Foundation
+ * @author Travis Reeder
+ * @author Tim O'Brien
+ * @author Pete Gieser
+ * @author C. Scott Ananian
  * @since 2.0
- * @version $Id: Fraction.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @version $Id: Fraction.java 1067685 2011-02-06 15:38:57Z niallp $
  */
-public final class Fraction extends Number implements Comparable<Fraction> {
+public final class Fraction extends Number implements Comparable {
 
     /**
      * Required for serialization support. Lang version 2.0.
@@ -135,8 +138,7 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      * @param numerator  the numerator, for example the three in 'three sevenths'
      * @param denominator  the denominator, for example the seven in 'three sevenths'
      * @return a new fraction instance
-     * @throws ArithmeticException if the denominator is <code>zero</code>
-     * or the denominator is {@code negative} and the numerator is {@code Integer#MIN_VALUE}
+     * @throws ArithmeticException if the denomiator is <code>zero</code>
      */
     public static Fraction getFraction(int numerator, int denominator) {
         if (denominator == 0) {
@@ -163,7 +165,7 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      * @param numerator  the numerator, for example the three in 'one and three sevenths'
      * @param denominator  the denominator, for example the seven in 'one and three sevenths'
      * @return a new fraction instance
-     * @throws ArithmeticException if the denominator is <code>zero</code>
+     * @throws ArithmeticException if the denomiator is <code>zero</code>
      * @throws ArithmeticException if the denominator is negative
      * @throws ArithmeticException if the numerator is negative
      * @throws ArithmeticException if the resulting numerator exceeds 
@@ -416,7 +418,6 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      *
      * @return the whole number fraction part
      */
-    @Override
     public int intValue() {
         return numerator / denominator;
     }
@@ -427,7 +428,6 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      *
      * @return the whole number fraction part
      */
-    @Override
     public long longValue() {
         return (long) numerator / denominator;
     }
@@ -438,7 +438,6 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      *
      * @return the fraction as a <code>float</code>
      */
-    @Override
     public float floatValue() {
         return ((float) numerator) / ((float) denominator);
     }
@@ -449,7 +448,6 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      *
      * @return the fraction as a <code>double</code>
      */
-    @Override
     public double doubleValue() {
         return ((double) numerator) / ((double) denominator);
     }
@@ -574,15 +572,8 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      * @return the greatest common divisor, never zero
      */
     private static int greatestCommonDivisor(int u, int v) {
-        // From Commons Math:
-        if ((u == 0) || (v == 0)) {
-            if ((u == Integer.MIN_VALUE) || (v == Integer.MIN_VALUE)) {
-                throw new ArithmeticException("overflow: gcd is 2^31");
-            }
-            return Math.abs(u) + Math.abs(v);
-        }
-        //if either operand is abs 1, return 1:
-        if (Math.abs(u) == 1 || Math.abs(v) == 1) {
+        //if either op. is abs 0 or 1, return 1:
+        if (Math.abs(u) <= 1 || Math.abs(v) <= 1) {
             return 1;
         }
         // keep u and v negative, as negative integers range down to
@@ -840,7 +831,6 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      * @param obj the reference object with which to compare
      * @return <code>true</code> if this object is equal
      */
-    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -858,7 +848,6 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      *
      * @return a hash code value for this object
      */
-    @Override
     public int hashCode() {
         if (hashCode == 0) {
             // hashcode update should be atomic.
@@ -874,12 +863,13 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      * with equals, because, for example, equals treats 1/2 and 2/4 as
      * different, whereas compareTo treats them as equal.
      *
-     * @param other  the object to compare to
+     * @param object  the object to compare to
      * @return -1 if this is less, 0 if equal, +1 if greater
      * @throws ClassCastException if the object is not a <code>Fraction</code>
      * @throws NullPointerException if the object is <code>null</code>
      */
-    public int compareTo(Fraction other) {
+    public int compareTo(Object object) {
+        Fraction other = (Fraction) object;
         if (this==other) {
             return 0;
         }
@@ -906,10 +896,9 @@ public final class Fraction extends Number implements Comparable<Fraction> {
      *
      * @return a <code>String</code> form of the fraction
      */
-    @Override
     public String toString() {
         if (toString == null) {
-            toString = new StringBuilder(32)
+            toString = new StrBuilder(32)
                 .append(getNumerator())
                 .append('/')
                 .append(getDenominator()).toString();
@@ -943,13 +932,13 @@ public final class Fraction extends Number implements Comparable<Fraction> {
                 if (properNumerator == 0) {
                     toProperString = Integer.toString(getProperWhole());
                 } else {
-                    toProperString = new StringBuilder(32)
+                    toProperString = new StrBuilder(32)
                         .append(getProperWhole()).append(' ')
                         .append(properNumerator).append('/')
                         .append(getDenominator()).toString();
                 }
             } else {
-                toProperString = new StringBuilder(32)
+                toProperString = new StrBuilder(32)
                     .append(getNumerator()).append('/')
                     .append(getDenominator()).toString();
             }

@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -97,7 +97,9 @@ import java.util.Properties;
  * {@link #setEnableSubstitutionInVariables(boolean) enableSubstitutionInVariables}
  * property to <b>true</b>.
  *
- * @version $Id: StrSubstitutor.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @author Oliver Heger
+ * @version $Id: StrSubstitutor.java 1067685 2011-02-06 15:38:57Z niallp $
  * @since 2.2
  */
 public class StrSubstitutor {
@@ -130,7 +132,7 @@ public class StrSubstitutor {
     /**
      * Variable resolution is delegated to an implementor of VariableResolver.
      */
-    private StrLookup<?> variableResolver;
+    private StrLookup variableResolver;
     /**
      * The flag whether substitution in variable names is enabled.
      */
@@ -141,12 +143,11 @@ public class StrSubstitutor {
      * Replaces all the occurrences of variables in the given source object with
      * their matching values from the map.
      *
-     * @param <V> the type of the values in the map
      * @param source  the source text containing the variables to substitute, null returns null
      * @param valueMap  the map with the values, may be null
      * @return the result of the replace operation
      */
-    public static <V> String replace(Object source, Map<String, V> valueMap) {
+    public static String replace(Object source, Map valueMap) {
         return new StrSubstitutor(valueMap).replace(source);
     }
 
@@ -155,7 +156,6 @@ public class StrSubstitutor {
      * their matching values from the map. This method allows to specifiy a
      * custom variable prefix and suffix
      *
-     * @param <V> the type of the values in the map
      * @param source  the source text containing the variables to substitute, null returns null
      * @param valueMap  the map with the values, may be null
      * @param prefix  the prefix of variables, not null
@@ -163,7 +163,7 @@ public class StrSubstitutor {
      * @return the result of the replace operation
      * @throws IllegalArgumentException if the prefix or suffix is null
      */
-    public static <V> String replace(Object source, Map<String, V> valueMap, String prefix, String suffix) {
+    public static String replace(Object source, Map valueMap, String prefix, String suffix) {
         return new StrSubstitutor(valueMap, prefix, suffix).replace(source);
     }
 
@@ -174,14 +174,17 @@ public class StrSubstitutor {
      * @param source the source text containing the variables to substitute, null returns null
      * @param valueProperties the properties with values, may be null
      * @return the result of the replace operation
+     * @since 2.6
      */
-    public static String replace(Object source, Properties valueProperties) {
+    public static String replace(Object source, Properties valueProperties)
+    {
         if (valueProperties == null) {
             return source.toString();
         }
-        Map<String,String> valueMap = new HashMap<String,String>();
-        Enumeration<?> propNames = valueProperties.propertyNames();
-        while (propNames.hasMoreElements()) {
+        Map valueMap = new HashMap();
+        Enumeration propNames = valueProperties.propertyNames();
+        while (propNames.hasMoreElements())
+        {
             String propName = (String)propNames.nextElement();
             String propValue = valueProperties.getProperty(propName);
             valueMap.put(propName, propValue);
@@ -206,44 +209,41 @@ public class StrSubstitutor {
      * and the escaping character.
      */
     public StrSubstitutor() {
-        this((StrLookup<?>) null, DEFAULT_PREFIX, DEFAULT_SUFFIX, DEFAULT_ESCAPE);
+        this((StrLookup) null, DEFAULT_PREFIX, DEFAULT_SUFFIX, DEFAULT_ESCAPE);
     }
 
     /**
      * Creates a new instance and initializes it. Uses defaults for variable
      * prefix and suffix and the escaping character.
      *
-     * @param <V> the type of the values in the map
      * @param valueMap  the map with the variables' values, may be null
      */
-    public <V> StrSubstitutor(Map<String, V> valueMap) {
+    public StrSubstitutor(Map valueMap) {
         this(StrLookup.mapLookup(valueMap), DEFAULT_PREFIX, DEFAULT_SUFFIX, DEFAULT_ESCAPE);
     }
 
     /**
      * Creates a new instance and initializes it. Uses a default escaping character.
      *
-     * @param <V> the type of the values in the map
      * @param valueMap  the map with the variables' values, may be null
      * @param prefix  the prefix for variables, not null
      * @param suffix  the suffix for variables, not null
      * @throws IllegalArgumentException if the prefix or suffix is null
      */
-    public <V> StrSubstitutor(Map<String, V> valueMap, String prefix, String suffix) {
+    public StrSubstitutor(Map valueMap, String prefix, String suffix) {
         this(StrLookup.mapLookup(valueMap), prefix, suffix, DEFAULT_ESCAPE);
     }
 
     /**
      * Creates a new instance and initializes it.
      *
-     * @param <V> the type of the values in the map
      * @param valueMap  the map with the variables' values, may be null
      * @param prefix  the prefix for variables, not null
      * @param suffix  the suffix for variables, not null
      * @param escape  the escape character
      * @throws IllegalArgumentException if the prefix or suffix is null
      */
-    public <V> StrSubstitutor(Map<String, V> valueMap, String prefix, String suffix, char escape) {
+    public StrSubstitutor(Map valueMap, String prefix, String suffix, char escape) {
         this(StrLookup.mapLookup(valueMap), prefix, suffix, escape);
     }
 
@@ -252,7 +252,7 @@ public class StrSubstitutor {
      *
      * @param variableResolver  the variable resolver, may be null
      */
-    public StrSubstitutor(StrLookup<?> variableResolver) {
+    public StrSubstitutor(StrLookup variableResolver) {
         this(variableResolver, DEFAULT_PREFIX, DEFAULT_SUFFIX, DEFAULT_ESCAPE);
     }
 
@@ -265,7 +265,7 @@ public class StrSubstitutor {
      * @param escape  the escape character
      * @throws IllegalArgumentException if the prefix or suffix is null
      */
-    public StrSubstitutor(StrLookup<?> variableResolver, String prefix, String suffix, char escape) {
+    public StrSubstitutor(StrLookup variableResolver, String prefix, String suffix, char escape) {
         this.setVariableResolver(variableResolver);
         this.setVariablePrefix(prefix);
         this.setVariableSuffix(suffix);
@@ -282,7 +282,7 @@ public class StrSubstitutor {
      * @throws IllegalArgumentException if the prefix or suffix is null
      */
     public StrSubstitutor(
-            StrLookup<?> variableResolver, StrMatcher prefixMatcher, StrMatcher suffixMatcher, char escape) {
+            StrLookup variableResolver, StrMatcher prefixMatcher, StrMatcher suffixMatcher, char escape) {
         this.setVariableResolver(variableResolver);
         this.setVariablePrefixMatcher(prefixMatcher);
         this.setVariableSuffixMatcher(suffixMatcher);
@@ -575,7 +575,7 @@ public class StrSubstitutor {
      * @return the length change that occurs, unless priorVariables is null when the int
      *  represents a boolean flag as to whether any change occurred.
      */
-    private int substitute(StrBuilder buf, int offset, int length, List<String> priorVariables) {
+    private int substitute(StrBuilder buf, int offset, int length, List priorVariables) {
         StrMatcher prefixMatcher = getVariablePrefixMatcher();
         StrMatcher suffixMatcher = getVariableSuffixMatcher();
         char escape = getEscapeChar();
@@ -636,7 +636,7 @@ public class StrSubstitutor {
 
                                 // on the first call initialize priorVariables
                                 if (priorVariables == null) {
-                                    priorVariables = new ArrayList<String>();
+                                    priorVariables = new ArrayList();
                                     priorVariables.add(new String(chars,
                                             offset, length));
                                 }
@@ -689,7 +689,7 @@ public class StrSubstitutor {
      * @param varName  the variable name to check
      * @param priorVariables  the list of prior variables
      */
-    private void checkCyclicSubstitution(String varName, List<String> priorVariables) {
+    private void checkCyclicSubstitution(String varName, List priorVariables) {
         if (priorVariables.contains(varName) == false) {
             return;
         }
@@ -719,7 +719,7 @@ public class StrSubstitutor {
      * @return the variable's value or <b>null</b> if the variable is unknown
      */
     protected String resolveVariable(String variableName, StrBuilder buf, int startPos, int endPos) {
-        StrLookup<?> resolver = getVariableResolver();
+        StrLookup resolver = getVariableResolver();
         if (resolver == null) {
             return null;
         }
@@ -885,7 +885,7 @@ public class StrSubstitutor {
      *
      * @return the VariableResolver
      */
-    public StrLookup<?> getVariableResolver() {
+    public StrLookup getVariableResolver() {
         return this.variableResolver;
     }
 
@@ -894,7 +894,7 @@ public class StrSubstitutor {
      *
      * @param variableResolver  the VariableResolver
      */
-    public void setVariableResolver(StrLookup<?> variableResolver) {
+    public void setVariableResolver(StrLookup variableResolver) {
         this.variableResolver = variableResolver;
     }
 
@@ -904,7 +904,7 @@ public class StrSubstitutor {
      * Returns a flag whether substitution is done in variable names.
      *
      * @return the substitution in variable names flag
-     * @since 3.0
+     * @since 2.6
      */
     public boolean isEnableSubstitutionInVariables() {
         return enableSubstitutionInVariables;
@@ -917,7 +917,7 @@ public class StrSubstitutor {
      * <code>${jre-${java.version}}</code>. The default value is <b>false</b>.
      *
      * @param enableSubstitutionInVariables the new value of the flag
-     * @since 3.0
+     * @since 2.6
      */
     public void setEnableSubstitutionInVariables(
             boolean enableSubstitutionInVariables) {

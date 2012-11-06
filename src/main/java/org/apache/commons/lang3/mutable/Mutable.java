@@ -26,17 +26,19 @@ package org.apache.commons.lang3.mutable;
  * effectively change the value of the primitive/string. Another use case is to store a frequently changing primitive in
  * a collection (for example a total in a map) without needing to create new Integer/Long wrapper objects.
  * 
+ * @author Apache Software Foundation
+ * @author Matthew Hawthorne
  * @since 2.1
- * @version $Id: Mutable.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @version $Id: Mutable.java 1067685 2011-02-06 15:38:57Z niallp $
  */
-public interface Mutable<T> {
+public interface Mutable {
 
     /**
      * Gets the value of this mutable.
      * 
      * @return the stored value
      */
-    T getValue();
+    Object getValue();
 
     /**
      * Sets the value of this mutable.
@@ -48,6 +50,6 @@ public interface Mutable<T> {
      * @throws ClassCastException
      *             if the type is invalid
      */
-    void setValue(T value);
+    void setValue(Object value);
 
 }

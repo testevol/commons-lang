@@ -25,10 +25,13 @@ import junit.framework.TestCase;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 
 /**
  * Unit tests ConstructorUtils
- * @version $Id: ConstructorUtilsTest.java 1097487 2011-04-28 14:49:45Z ggregory $
+ * @author mbenson
+ * @version $Id: ConstructorUtilsTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class ConstructorUtilsTest extends TestCase {
     public static class TestBean {
@@ -58,26 +61,24 @@ public class ConstructorUtilsTest extends TestCase {
             toString = "(Object)";
         }
 
-        @Override
         public String toString() {
             return toString;
         }
     }
 
     private static class PrivateClass {
-        @SuppressWarnings("unused")
         public PrivateClass() {
         }
     }
 
-    private Map<Class<?>, Class<?>[]> classCache;
+    private Map classCache;
 
     public ConstructorUtilsTest(String name) {
         super(name);
-        classCache = new HashMap<Class<?>, Class<?>[]>();
+        classCache = new HashMap();
     }
 
-    @Override
+
     protected void setUp() throws Exception {
         super.setUp();
         classCache.clear();
@@ -89,10 +90,9 @@ public class ConstructorUtilsTest extends TestCase {
 
     public void testInvokeConstructor() throws Exception {
         assertEquals("()", ConstructorUtils.invokeConstructor(TestBean.class,
-                (Object[]) ArrayUtils.EMPTY_CLASS_ARRAY).toString());
+                ArrayUtils.EMPTY_CLASS_ARRAY).toString());
         assertEquals("()", ConstructorUtils.invokeConstructor(TestBean.class,
-                (Object[]) null).toString());
-        assertEquals("()", ConstructorUtils.invokeConstructor(TestBean.class).toString());
+                (Class[]) null).toString());
         assertEquals("(String)", ConstructorUtils.invokeConstructor(
                 TestBean.class, "").toString());
         assertEquals("(Object)", ConstructorUtils.invokeConstructor(
@@ -111,9 +111,9 @@ public class ConstructorUtilsTest extends TestCase {
 
     public void testInvokeExactConstructor() throws Exception {
         assertEquals("()", ConstructorUtils.invokeExactConstructor(
-                TestBean.class, (Object[]) ArrayUtils.EMPTY_CLASS_ARRAY).toString());
+                TestBean.class, ArrayUtils.EMPTY_CLASS_ARRAY).toString());
         assertEquals("()", ConstructorUtils.invokeExactConstructor(
-                TestBean.class, (Object[]) null).toString());
+                TestBean.class, (Class[]) null).toString());
         assertEquals("(String)", ConstructorUtils.invokeExactConstructor(
                 TestBean.class, "").toString());
         assertEquals("(Object)", ConstructorUtils.invokeExactConstructor(
@@ -199,21 +199,21 @@ public class ConstructorUtilsTest extends TestCase {
                 singletonArray(Double.TYPE), singletonArray(Double.TYPE));
     }
 
-    private void expectMatchingAccessibleConstructorParameterTypes(Class<?> cls,
-            Class<?>[] requestTypes, Class<?>[] actualTypes) {
-        Constructor<?> c = ConstructorUtils.getMatchingAccessibleConstructor(cls,
+    private void expectMatchingAccessibleConstructorParameterTypes(Class cls,
+            Class[] requestTypes, Class[] actualTypes) {
+        Constructor c = ConstructorUtils.getMatchingAccessibleConstructor(cls,
                 requestTypes);
         assertTrue(toString(c.getParameterTypes()) + " not equals "
                 + toString(actualTypes), Arrays.equals(actualTypes, c
                 .getParameterTypes()));
     }
 
-    private String toString(Class<?>[] c) {
+    private String toString(Class[] c) {
         return Arrays.asList(c).toString();
     }
 
-    private Class<?>[] singletonArray(Class<?> c) {
-        Class<?>[] result = classCache.get(c);
+    private Class[] singletonArray(Class c) {
+        Class[] result = (Class[]) classCache.get(c);
         if (result == null) {
             result = new Class[] { c };
             classCache.put(c, result);

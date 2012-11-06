@@ -19,12 +19,15 @@ package org.apache.commons.lang3;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import junit.framework.TestCase;
 
 /**
  * Tests ArrayUtils remove and removeElement methods.
  * 
- * @version $Id: ArrayUtilsRemoveTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Maarten Coene
+ * @version $Id: ArrayUtilsRemoveTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class ArrayUtilsRemoveTest extends TestCase {
 
@@ -57,16 +60,16 @@ public class ArrayUtilsRemoveTest extends TestCase {
     }
 
     public void testRemoveNumberArray(){
-        Number[] inarray = {Integer.valueOf(1),Long.valueOf(2),Byte.valueOf((byte) 3)};
+        Number[] inarray = {new Integer(1), new Long(2), new Byte((byte) 3)};
         assertEquals(3, inarray.length);
         Number[] outarray;
-        outarray = ArrayUtils.remove(inarray, 1);
+        outarray = (Number[])ArrayUtils.remove(inarray, 1);
         assertEquals(2, outarray.length);
         assertEquals(Number.class, outarray.getClass().getComponentType());
-        outarray = ArrayUtils.remove(outarray, 1);
+        outarray = (Number[])ArrayUtils.remove(outarray, 1);
         assertEquals(1, outarray.length);
         assertEquals(Number.class, outarray.getClass().getComponentType());
-        outarray = ArrayUtils.remove(outarray, 0);
+        outarray = (Number[])ArrayUtils.remove(outarray, 0);
         assertEquals(0, outarray.length);
         assertEquals(Number.class, outarray.getClass().getComponentType());
     }
@@ -367,7 +370,6 @@ public class ArrayUtilsRemoveTest extends TestCase {
         assertEquals(Character.TYPE, array.getClass().getComponentType());
     }
     
-    @SuppressWarnings("cast")
     public void testRemoveElementDoubleArray() {
         double[] array;
         array = ArrayUtils.removeElement((double[]) null, (double) 1);
@@ -386,7 +388,6 @@ public class ArrayUtilsRemoveTest extends TestCase {
         assertEquals(Double.TYPE, array.getClass().getComponentType());
     }
     
-    @SuppressWarnings("cast")
     public void testRemoveElementFloatArray() {
         float[] array;
         array = ArrayUtils.removeElement((float[]) null, (float) 1);
@@ -423,7 +424,6 @@ public class ArrayUtilsRemoveTest extends TestCase {
         assertEquals(Integer.TYPE, array.getClass().getComponentType());
     }
     
-    @SuppressWarnings("cast")
     public void testRemoveElementLongArray() {
         long[] array;
         array = ArrayUtils.removeElement((long[]) null, (long) 1);

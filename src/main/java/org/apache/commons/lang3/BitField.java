@@ -19,8 +19,15 @@ package org.apache.commons.lang3;
 /**
  * <p>Operations on bit-mapped fields.</p>
  *
+ * @author Apache Software Foundation
+ * @author Apache Jakarta POI
+ * @author Scott Sanders (sanders at apache dot org)
+ * @author Marc Johnson (mjohnson at apache dot org)
+ * @author Andrew C. Oliver (acoliver at apache dot org)
+ * @author Pete Gieser
+ * @author Gary Gregory
  * @since 2.0
- * @version $Id: BitField.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @version $Id: BitField.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class BitField {
     
@@ -116,8 +123,8 @@ public class BitField {
      *
      * @param holder the int data containing the bits we're interested
      *  in
-     * @return {@code true} if any of the bits are set,
-     *  else {@code false}
+     * @return <code>true</code> if any of the bits are set,
+     *  else <code>false</code>
      */
     public boolean isSet(int holder) {
         return (holder & _mask) != 0;
@@ -128,12 +135,12 @@ public class BitField {
      *
      * <p>This is a stricter test than {@link #isSet(int)},
      * in that all of the bits in a multi-bit set must be set
-     * for this method to return {@code true}.</p>
+     * for this method to return <code>true</code>.</p>
      *
      * @param holder the int data containing the bits we're
      *  interested in
-     * @return {@code true} if all of the bits are set,
-     *  else {@code false}
+     * @return <code>true</code> if all of the bits are set,
+     *  else <code>false</code>
      */
     public boolean isAllSet(int holder) {
         return (holder & _mask) == _mask;
@@ -173,7 +180,7 @@ public class BitField {
      * @param holder the int data containing the bits we're
      *  interested in
      * @return the value of holder with the specified bits cleared
-     *  (set to {@code 0})
+     *  (set to <code>0</code>)
      */
     public int clear(int holder) {
         return holder & ~_mask;
@@ -185,7 +192,7 @@ public class BitField {
      * @param holder the short data containing the bits we're
      *  interested in
      * @return the value of holder with the specified bits cleared
-     *  (set to {@code 0})
+     *  (set to <code>0</code>)
      */
     public short clearShort(short holder) {
         return (short) clear(holder);
@@ -198,7 +205,7 @@ public class BitField {
      *  interested in
      *
      * @return the value of holder with the specified bits cleared
-     *  (set to {@code 0})
+     *  (set to <code>0</code>)
      */
     public byte clearByte(byte holder) {
         return (byte) clear(holder);
@@ -210,7 +217,7 @@ public class BitField {
      * @param holder the int data containing the bits we're
      *  interested in
      * @return the value of holder with the specified bits set
-     *  to {@code 1}
+     *  to <code>1</code>
      */
     public int set(int holder) {
         return holder | _mask;
@@ -222,7 +229,7 @@ public class BitField {
      * @param holder the short data containing the bits we're
      *  interested in
      * @return the value of holder with the specified bits set
-     *  to {@code 1}
+     *  to <code>1</code>
      */
     public short setShort(short holder) {
         return (short) set(holder);
@@ -235,7 +242,7 @@ public class BitField {
      *  interested in
      *
      * @return the value of holder with the specified bits set
-     *  to {@code 1}
+     *  to <code>1</code>
      */
     public byte setByte(byte holder) {
         return (byte) set(holder);

@@ -22,7 +22,7 @@ import junit.framework.TestCase;
 /**
  * Unit tests for {@link org.apache.commons.lang3.text.StrMatcher}.
  *
- * @version $Id: StrMatcherTest.java 892118 2009-12-18 03:39:13Z sebb $
+ * @version $Id: StrMatcherTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class StrMatcherTest extends TestCase {
 

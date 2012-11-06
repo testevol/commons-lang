@@ -16,12 +16,17 @@
  */
 package org.apache.commons.lang3;
 
+import org.apache.commons.lang3.StringUtils;
+
 import junit.framework.TestCase;
 
 /**
  * Unit tests {@link org.apache.commons.lang3.StringUtils} - Substring methods
  *
- * @version $Id: StringUtilsSubstringTest.java 1089970 2011-04-07 20:05:50Z sebb $
+ * @author Apache Software Foundation
+ * @author <a href="mailto:ridesmet@users.sourceforge.net">Ringo De Smet</a>
+ * @author Phil Steitz
+ * @version $Id: StringUtilsSubstringTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class StringUtilsSubstringTest extends TestCase {
     private static final String FOO = "foo";
@@ -308,6 +313,26 @@ public class StringUtilsSubstringTest extends TestCase {
              StringUtils.countMatches("one long someone sentence of one", "two"));
         assertEquals(4, 
              StringUtils.countMatches("oooooooooooo", "ooo"));
+    }
+
+    public void testDeprecatedGetNestedString_StringString() {
+        assertEquals(null, StringUtils.getNestedString(null, "tag"));
+        assertEquals("", StringUtils.getNestedString("", ""));
+        assertEquals(null, StringUtils.getNestedString("", "abc"));
+        assertEquals("", StringUtils.getNestedString("    ", " "));
+        assertEquals(null, StringUtils.getNestedString("abc", null));
+        assertEquals("", StringUtils.getNestedString("abc", ""));
+        assertEquals(null, StringUtils.getNestedString("abc", "a"));
+        assertEquals("bc", StringUtils.getNestedString("abca", "a"));
+        assertEquals("bc", StringUtils.getNestedString("abcabca", "a"));
+        assertEquals("bar", StringUtils.getNestedString("\nbar\n", "\n"));
+    }
+            
+    public void testDeprecatedGetNestedString_StringStringString() {
+        assertEquals(null, StringUtils.getNestedString(null, "", ""));
+        assertEquals("", StringUtils.getNestedString("", "", ""));
+        assertEquals("", StringUtils.getNestedString("    ", " ", "  "));
+        assertEquals("bar", StringUtils.getNestedString("<foo>bar</foo>", "<foo>", "</foo>") );
     }
 
 }

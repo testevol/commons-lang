@@ -16,8 +16,6 @@
  */
 package org.apache.commons.lang3;
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_4;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -28,12 +26,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.apache.commons.lang3.LocaleUtils;
+import org.apache.commons.lang3.SystemUtils;
+
 import junit.framework.TestCase;
 
 /**
  * Unit tests for {@link LocaleUtils}.
  *
- * @version $Id: LocaleUtilsTest.java 1144929 2011-07-10 18:26:16Z ggregory $
+ * @author Apache Software Foundation
+ * @author Chris Hyzer
+ * @version $Id: LocaleUtilsTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class LocaleUtilsTest extends TestCase {
 
@@ -54,7 +57,7 @@ public class LocaleUtilsTest extends TestCase {
         super(name);
     }
 
-    @Override
+
     public void setUp() throws Exception {
         super.setUp();
 
@@ -68,7 +71,7 @@ public class LocaleUtilsTest extends TestCase {
      */
     public void testConstructor() {
         assertNotNull(new LocaleUtils());
-        Constructor<?>[] cons = LocaleUtils.class.getDeclaredConstructors();
+        Constructor[] cons = LocaleUtils.class.getDeclaredConstructors();
         assertEquals(1, cons.length);
         assertEquals(true, Modifier.isPublic(cons[0].getModifiers()));
         assertEquals(true, Modifier.isPublic(LocaleUtils.class.getModifiers()));
@@ -212,7 +215,7 @@ public class LocaleUtilsTest extends TestCase {
         assertValidToLocale("us_EN_A", "us", "EN", "A");
         // this isn't pretty, but was caused by a jdk bug it seems
         // http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4210525
-        if (SystemUtils.isJavaVersionAtLeast(JAVA_1_4)) {
+        if (SystemUtils.isJavaVersionAtLeast(1.4f)) {
             assertValidToLocale("us_EN_a", "us", "EN", "a");
             assertValidToLocale("us_EN_SFsafdFDsdfF", "us", "EN", "SFsafdFDsdfF");
         } else {
@@ -239,7 +242,7 @@ public class LocaleUtilsTest extends TestCase {
      * @param expected  expected results
      */
     private void assertLocaleLookupList(Locale locale, Locale defaultLocale, Locale[] expected) {
-        List<Locale> localeList = defaultLocale == null ?
+        List localeList = defaultLocale == null ?
                 LocaleUtils.localeLookupList(locale) :
                 LocaleUtils.localeLookupList(locale, defaultLocale);
         
@@ -326,14 +329,14 @@ public class LocaleUtilsTest extends TestCase {
      * Test availableLocaleList() method.
      */
     public void testAvailableLocaleList() {
-        List<Locale> list = LocaleUtils.availableLocaleList();
-        List<Locale> list2 = LocaleUtils.availableLocaleList();
+        List list = LocaleUtils.availableLocaleList();
+        List list2 = LocaleUtils.availableLocaleList();
         assertNotNull(list);
         assertSame(list, list2);
         assertUnmodifiableCollection(list);
         
         Locale[] jdkLocaleArray = Locale.getAvailableLocales();
-        List<Locale> jdkLocaleList = Arrays.asList(jdkLocaleArray);
+        List jdkLocaleList = Arrays.asList(jdkLocaleArray);
         assertEquals(jdkLocaleList, list);
     }
 
@@ -342,15 +345,15 @@ public class LocaleUtilsTest extends TestCase {
      * Test availableLocaleSet() method.
      */
     public void testAvailableLocaleSet() {
-        Set<Locale> set = LocaleUtils.availableLocaleSet();
-        Set<Locale> set2 = LocaleUtils.availableLocaleSet();
+        Set set = LocaleUtils.availableLocaleSet();
+        Set set2 = LocaleUtils.availableLocaleSet();
         assertNotNull(set);
         assertSame(set, set2);
         assertUnmodifiableCollection(set);
         
         Locale[] jdkLocaleArray = Locale.getAvailableLocales();
-        List<Locale> jdkLocaleList = Arrays.asList(jdkLocaleArray);
-        Set<Locale> jdkLocaleSet = new HashSet<Locale>(jdkLocaleList);
+        List jdkLocaleList = Arrays.asList(jdkLocaleArray);
+        Set jdkLocaleSet = new HashSet(jdkLocaleList);
         assertEquals(jdkLocaleSet, set);
     }
 
@@ -359,7 +362,7 @@ public class LocaleUtilsTest extends TestCase {
      * Test availableLocaleSet() method.
      */
     public void testIsAvailableLocale() {
-        Set<Locale> set = LocaleUtils.availableLocaleSet();
+        Set set = LocaleUtils.availableLocaleSet();
         assertEquals(set.contains(LOCALE_EN), LocaleUtils.isAvailableLocale(LOCALE_EN));
         assertEquals(set.contains(LOCALE_EN_US), LocaleUtils.isAvailableLocale(LOCALE_EN_US));
         assertEquals(set.contains(LOCALE_EN_US_ZZZZ), LocaleUtils.isAvailableLocale(LOCALE_EN_US_ZZZZ));
@@ -380,28 +383,28 @@ public class LocaleUtilsTest extends TestCase {
      * @param languages array of languages that should be returned
      */
     private void assertLanguageByCountry(String country, String[] languages) {
-        List<Locale> list = LocaleUtils.languagesByCountry(country);
-        List<Locale> list2 = LocaleUtils.languagesByCountry(country);
+        List list = LocaleUtils.languagesByCountry(country);
+        List list2 = LocaleUtils.languagesByCountry(country);
         assertNotNull(list);
         assertSame(list, list2);
         //search through langauges
-        for (String language : languages) {
-            Iterator<Locale> iterator = list.iterator();
+        for (int i = 0; i < languages.length; i++) {
+            Iterator iterator = list.iterator();
             boolean found = false;
             // see if it was returned by the set
             while (iterator.hasNext()) {
-                Locale locale = iterator.next();
+                Locale locale = (Locale) iterator.next();
                 // should have an en empty variant
                 assertTrue(locale.getVariant() == null
                         || locale.getVariant().length() == 0);
                 assertEquals(country, locale.getCountry());
-                if (language.equals(locale.getLanguage())) {
+                if (languages[i].equals(locale.getLanguage())) {
                     found = true;
                     break;
                 }
             }
             if (!found) {
-                fail("Cound not find language: " + language
+                fail("Cound not find language: " + languages[i]
                         + " for country: " + country);
             }
         }
@@ -430,28 +433,28 @@ public class LocaleUtilsTest extends TestCase {
      * @param countries array of countries that should be returned
      */
     private void assertCountriesByLanguage(String language, String[] countries) {
-        List<Locale> list = LocaleUtils.countriesByLanguage(language);
-        List<Locale> list2 = LocaleUtils.countriesByLanguage(language);
+        List list = LocaleUtils.countriesByLanguage(language);
+        List list2 = LocaleUtils.countriesByLanguage(language);
         assertNotNull(list);
         assertSame(list, list2);
         //search through langauges
-        for (String countrie : countries) {
-            Iterator<Locale> iterator = list.iterator();
+        for (int i = 0; i < countries.length; i++) {
+            Iterator iterator = list.iterator();
             boolean found = false;
             // see if it was returned by the set
             while (iterator.hasNext()) {
-                Locale locale = iterator.next();
+                Locale locale = (Locale) iterator.next();
                 // should have an en empty variant
                 assertTrue(locale.getVariant() == null
                         || locale.getVariant().length() == 0);
                 assertEquals(language, locale.getLanguage());
-                if (countrie.equals(locale.getCountry())) {
+                if (countries[i].equals(locale.getCountry())) {
                     found = true;
                     break;
                 }
             }
             if (!found) {
-                fail("Cound not find language: " + countrie
+                fail("Cound not find language: " + countries[i]
                         + " for country: " + language);
             }
         }
@@ -471,9 +474,9 @@ public class LocaleUtilsTest extends TestCase {
     /**
      * @param coll  the collection to check
      */
-    private static void assertUnmodifiableCollection(Collection<?> coll) {
+    private static void assertUnmodifiableCollection(Collection coll) {
         try {
-            coll.add(null);
+            coll.add("Unmodifiable");
             fail();
         } catch (UnsupportedOperationException ex) {}
     }

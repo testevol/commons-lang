@@ -27,6 +27,7 @@ package org.apache.commons.lang3.builder;
  * This is necessary to disambiguate the occasional duplicate
  * identityHashCodes that can occur.
  * 
+ * @author Apache Software Foundation
  */ 
 final class IDKey {
         private final Object value;
@@ -49,7 +50,6 @@ final class IDKey {
          * returns hashcode - i.e. the system identity hashcode.
          * @return the hashcode
          */ 
-        @Override
         public int hashCode() {
            return id;
         }
@@ -59,7 +59,6 @@ final class IDKey {
          * @param other The other object to compare to
          * @return if the instances are for the same object
          */ 
-        @Override
         public boolean equals(Object other) {
             if (!(other instanceof IDKey)) {
                 return false;

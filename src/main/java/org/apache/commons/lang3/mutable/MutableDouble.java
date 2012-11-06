@@ -16,14 +16,17 @@
  */
 package org.apache.commons.lang3.mutable;
 
+import org.apache.commons.lang3.math.NumberUtils;
+
 /**
  * A mutable <code>double</code> wrapper.
  * 
  * @see Double
  * @since 2.1
- * @version $Id: MutableDouble.java 1096472 2011-04-25 13:28:06Z mbenson $
+ * @author Apache Software Foundation
+ * @version $Id: MutableDouble.java 1067685 2011-02-06 15:38:57Z niallp $
  */
-public class MutableDouble extends Number implements Comparable<MutableDouble>, Mutable<Number> {
+public class MutableDouble extends Number implements Comparable, Mutable {
 
     /**
      * Required for serialization support.
@@ -81,7 +84,7 @@ public class MutableDouble extends Number implements Comparable<MutableDouble>, 
      * 
      * @return the value as a Double, never null
      */
-    public Double getValue() {
+    public Object getValue() {
         return new Double(this.value);
     }
 
@@ -99,9 +102,10 @@ public class MutableDouble extends Number implements Comparable<MutableDouble>, 
      * 
      * @param value  the value to set, not null
      * @throws NullPointerException if the object is null
+     * @throws ClassCastException if the type is not a {@link Number}
      */
-    public void setValue(Number value) {
-        this.value = value.doubleValue();
+    public void setValue(Object value) {
+        setValue(((Number) value).doubleValue());
     }
 
     //-----------------------------------------------------------------------
@@ -186,13 +190,12 @@ public class MutableDouble extends Number implements Comparable<MutableDouble>, 
     }
 
     //-----------------------------------------------------------------------
-    // shortValue and byteValue rely on Number implementation
+    // shortValue and bytValue rely on Number implementation
     /**
      * Returns the value of this MutableDouble as an int.
      *
      * @return the numeric value represented by this object after conversion to type int.
      */
-    @Override
     public int intValue() {
         return (int) value;
     }
@@ -202,7 +205,6 @@ public class MutableDouble extends Number implements Comparable<MutableDouble>, 
      *
      * @return the numeric value represented by this object after conversion to type long.
      */
-    @Override
     public long longValue() {
         return (long) value;
     }
@@ -212,7 +214,6 @@ public class MutableDouble extends Number implements Comparable<MutableDouble>, 
      *
      * @return the numeric value represented by this object after conversion to type float.
      */
-    @Override
     public float floatValue() {
         return (float) value;
     }
@@ -222,7 +223,6 @@ public class MutableDouble extends Number implements Comparable<MutableDouble>, 
      *
      * @return the numeric value represented by this object after conversion to type double.
      */
-    @Override
     public double doubleValue() {
         return value;
     }
@@ -234,7 +234,7 @@ public class MutableDouble extends Number implements Comparable<MutableDouble>, 
      * @return a Double instance containing the value from this mutable, never null
      */
     public Double toDouble() {
-        return Double.valueOf(doubleValue());
+        return new Double(doubleValue());
     }
 
     //-----------------------------------------------------------------------
@@ -267,7 +267,6 @@ public class MutableDouble extends Number implements Comparable<MutableDouble>, 
      * @param obj  the object to compare with, null returns false
      * @return <code>true</code> if the objects are the same; <code>false</code> otherwise.
      */
-    @Override
     public boolean equals(Object obj) {
         return (obj instanceof MutableDouble)
             && (Double.doubleToLongBits(((MutableDouble) obj).value) == Double.doubleToLongBits(value));
@@ -278,7 +277,6 @@ public class MutableDouble extends Number implements Comparable<MutableDouble>, 
      * 
      * @return a suitable hash code
      */
-    @Override
     public int hashCode() {
         long bits = Double.doubleToLongBits(value);
         return (int) (bits ^ (bits >>> 32));
@@ -288,12 +286,14 @@ public class MutableDouble extends Number implements Comparable<MutableDouble>, 
     /**
      * Compares this mutable to another in ascending order.
      * 
-     * @param other  the other mutable to compare to, not null
+     * @param obj the other mutable to compare to, not null
      * @return negative if this is less, zero if equal, positive if greater
+     * @throws ClassCastException if the argument is not a MutableDouble
      */
-    public int compareTo(MutableDouble other) {
+    public int compareTo(Object obj) {
+        MutableDouble other = (MutableDouble) obj;
         double anotherVal = other.value;
-        return Double.compare(value, anotherVal);
+        return NumberUtils.compare(value, anotherVal);
     }
 
     //-----------------------------------------------------------------------
@@ -302,7 +302,6 @@ public class MutableDouble extends Number implements Comparable<MutableDouble>, 
      * 
      * @return the mutable value as a string
      */
-    @Override
     public String toString() {
         return String.valueOf(value);
     }

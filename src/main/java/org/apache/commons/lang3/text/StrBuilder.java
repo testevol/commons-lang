@@ -18,6 +18,7 @@ package org.apache.commons.lang3.text;
 
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -66,10 +67,11 @@ import org.apache.commons.lang3.SystemUtils;
  * clone method so could not be used. From 3.0 onwards it no longer implements 
  * the interface. 
  *
+ * @author Apache Software Foundation
  * @since 2.2
- * @version $Id: StrBuilder.java 1144929 2011-07-10 18:26:16Z ggregory $
+ * @version $Id: StrBuilder.java 1067685 2011-02-06 15:38:57Z niallp $
  */
-public class StrBuilder implements CharSequence, Appendable {
+public class StrBuilder implements Cloneable {
 
     /**
      * The extra capacity for new builders.
@@ -461,38 +463,6 @@ public class StrBuilder implements CharSequence, Appendable {
     }
 
     /**
-     * Appends a CharSequence to this string builder.
-     * Appending null will call {@link #appendNull()}.
-     *
-     * @param seq  the CharSequence to append
-     * @return this, to enable chaining
-     * @since 3.0
-     */
-    public StrBuilder append(CharSequence seq) {
-        if (seq == null) {
-            return appendNull();
-        } 
-        return append(seq.toString());        
-    }
-
-    /**
-     * Appends part of a CharSequence to this string builder.
-     * Appending null will call {@link #appendNull()}.
-     *
-     * @param seq  the CharSequence to append
-     * @param startIndex  the start index, inclusive, must be valid
-     * @param length  the length to append, must be valid
-     * @return this, to enable chaining
-     * @since 3.0
-     */
-    public StrBuilder append(CharSequence seq, int startIndex, int length) {
-        if (seq == null) {
-            return appendNull();
-        } 
-        return append(seq.toString(), startIndex, length);
-    }
-
-    /**
      * Appends a string to this string builder.
      * Appending null will call {@link #appendNull()}.
      *
@@ -717,7 +687,6 @@ public class StrBuilder implements CharSequence, Appendable {
      *
      * @param ch  the value to append
      * @return this, to enable chaining
-     * @since 3.0
      */
     public StrBuilder append(char ch) {
         int len = length();
@@ -961,25 +930,25 @@ public class StrBuilder implements CharSequence, Appendable {
      */
     public StrBuilder appendAll(Object[] array) {
         if (array != null && array.length > 0) {
-            for (Object element : array) {
-                append(element);
+            for (int i = 0; i < array.length; i++) {
+                append(array[i]);
             }
         }
         return this;
     }
 
     /**
-     * Appends each item in a iterable to the builder without any separators.
-     * Appending a null iterable will have no effect.
+     * Appends each item in a collection to the builder without any separators.
+     * Appending a null collection will have no effect.
      * Each object is appended using {@link #append(Object)}.
      *
-     * @param iterable  the iterable to append
+     * @param coll  the collection to append
      * @return this, to enable chaining
      * @since 2.3
      */
-    public StrBuilder appendAll(Iterable<?> iterable) {
-        if (iterable != null) {
-            Iterator<?> it = iterable.iterator();
+    public StrBuilder appendAll(Collection coll) {
+        if (coll != null && coll.size() > 0) {
+            Iterator it = coll.iterator();
             while (it.hasNext()) {
                 append(it.next());
             }
@@ -996,7 +965,7 @@ public class StrBuilder implements CharSequence, Appendable {
      * @return this, to enable chaining
      * @since 2.3
      */
-    public StrBuilder appendAll(Iterator<?> it) {
+    public StrBuilder appendAll(Iterator it) {
         if (it != null) {
             while (it.hasNext()) {
                 append(it.next());
@@ -1029,19 +998,19 @@ public class StrBuilder implements CharSequence, Appendable {
     }
 
     /**
-     * Appends a iterable placing separators between each value, but
+     * Appends a collection placing separators between each value, but
      * not before the first or after the last.
-     * Appending a null iterable will have no effect.
+     * Appending a null collection will have no effect.
      * Each object is appended using {@link #append(Object)}.
      *
-     * @param iterable  the iterable to append
+     * @param coll  the collection to append
      * @param separator  the separator to use, null means no separator
      * @return this, to enable chaining
      */
-    public StrBuilder appendWithSeparators(Iterable<?> iterable, String separator) {
-        if (iterable != null) {
+    public StrBuilder appendWithSeparators(Collection coll, String separator) {
+        if (coll != null && coll.size() > 0) {
             separator = (separator == null ? "" : separator);
-            Iterator<?> it = iterable.iterator();
+            Iterator it = coll.iterator();
             while (it.hasNext()) {
                 append(it.next());
                 if (it.hasNext()) {
@@ -1062,7 +1031,7 @@ public class StrBuilder implements CharSequence, Appendable {
      * @param separator  the separator to use, null means no separator
      * @return this, to enable chaining
      */
-    public StrBuilder appendWithSeparators(Iterator<?> it, String separator) {
+    public StrBuilder appendWithSeparators(Iterator it, String separator) {
         if (it != null) {
             separator = (separator == null ? "" : separator);
             while (it.hasNext()) {
@@ -1090,7 +1059,7 @@ public class StrBuilder implements CharSequence, Appendable {
      * }
      * </pre>
      * Note that for this simple example, you should use
-     * {@link #appendWithSeparators(Iterable, String)}.
+     * {@link #appendWithSeparators(Collection, String)}.
      * 
      * @param separator  the separator to use, null means no separator
      * @return this, to enable chaining
@@ -1148,7 +1117,7 @@ public class StrBuilder implements CharSequence, Appendable {
      * }
      * </pre>
      * Note that for this simple example, you should use
-     * {@link #appendWithSeparators(Iterable, String)}.
+     * {@link #appendWithSeparators(Collection, String)}.
      * 
      * @param separator  the separator to use
      * @return this, to enable chaining
@@ -1175,7 +1144,8 @@ public class StrBuilder implements CharSequence, Appendable {
     public StrBuilder appendSeparator(char standard, char defaultIfEmpty) {
         if (size() > 0) {
             append(standard);
-        } else {
+        }
+        else {
             append(defaultIfEmpty);
         }
         return this;
@@ -1194,7 +1164,7 @@ public class StrBuilder implements CharSequence, Appendable {
      * }
      * </pre>
      * Note that for this simple example, you should use
-     * {@link #appendWithSeparators(Iterable, String)}.
+     * {@link #appendWithSeparators(Collection, String)}.
      * 
      * @param separator  the separator to use, null means no separator
      * @param loopIndex  the loop index
@@ -1221,7 +1191,7 @@ public class StrBuilder implements CharSequence, Appendable {
      * }
      * </pre>
      * Note that for this simple example, you should use
-     * {@link #appendWithSeparators(Iterable, String)}.
+     * {@link #appendWithSeparators(Collection, String)}.
      * 
      * @param separator  the separator to use
      * @param loopIndex  the loop index
@@ -1374,7 +1344,6 @@ public class StrBuilder implements CharSequence, Appendable {
      * @return this, to enable chaining
      * @throws IndexOutOfBoundsException if the index is invalid
      */
-    @SuppressWarnings("null") // str cannot be null
     public StrBuilder insert(int index, String str) {
         validateIndex(index);
         if (str == null) {
@@ -2000,23 +1969,6 @@ public class StrBuilder implements CharSequence, Appendable {
 
     //-----------------------------------------------------------------------
     /**
-     * {@inheritDoc}
-     * @since 3.0
-     */
-    public CharSequence subSequence(int startIndex, int endIndex) {
-      if (startIndex < 0) {
-          throw new StringIndexOutOfBoundsException(startIndex);
-      }
-      if (endIndex > size) {
-          throw new StringIndexOutOfBoundsException(endIndex);
-      }
-      if (startIndex > endIndex) {
-          throw new StringIndexOutOfBoundsException(endIndex - startIndex);
-      }
-      return substring(startIndex, endIndex);
-    }
-
-    /**
      * Extracts a portion of this string builder as a string.
      * 
      * @param start  the start index, inclusive, must be valid
@@ -2580,7 +2532,6 @@ public class StrBuilder implements CharSequence, Appendable {
      * @param obj  the object to check, null returns false
      * @return true if the builders contain the same characters in the same order
      */
-    @Override
     public boolean equals(Object obj) {
         if (obj instanceof StrBuilder) {
             return equals((StrBuilder) obj);
@@ -2593,7 +2544,6 @@ public class StrBuilder implements CharSequence, Appendable {
      *
      * @return a hash code
      */
-    @Override
     public int hashCode() {
         char buf[] = buffer;
         int hash = 0;
@@ -2613,7 +2563,6 @@ public class StrBuilder implements CharSequence, Appendable {
      *
      * @return the builder as a String
      */
-    @Override
     public String toString() {
         return new String(buffer, 0, size);
     }
@@ -2626,6 +2575,20 @@ public class StrBuilder implements CharSequence, Appendable {
      */
     public StringBuffer toStringBuffer() {
         return new StringBuffer(size).append(buffer, 0, size);
+    }
+
+    /**
+     * Clone this object.
+     *
+     * @return a clone of this object
+     * @throws CloneNotSupportedException if clone is not supported
+     * @since 2.6
+     */
+    public Object clone() throws CloneNotSupportedException {
+        StrBuilder clone = (StrBuilder)super.clone();
+        clone.buffer = new char[buffer.length];
+        System.arraycopy(buffer, 0, clone.buffer, 0, buffer.length);
+        return clone;
     }
 
     //-----------------------------------------------------------------------
@@ -2677,8 +2640,7 @@ public class StrBuilder implements CharSequence, Appendable {
         }
 
         /** {@inheritDoc} */
-        @Override
-        protected List<String> tokenize(char[] chars, int offset, int count) {
+        protected List tokenize(char[] chars, int offset, int count) {
             if (chars == null) {
                 return super.tokenize(StrBuilder.this.buffer, 0, StrBuilder.this.size());
             } else {
@@ -2687,7 +2649,6 @@ public class StrBuilder implements CharSequence, Appendable {
         }
 
         /** {@inheritDoc} */
-        @Override
         public String getContent() {
             String str = super.getContent();
             if (str == null) {
@@ -2716,13 +2677,11 @@ public class StrBuilder implements CharSequence, Appendable {
         }
 
         /** {@inheritDoc} */
-        @Override
         public void close() {
             // do nothing
         }
 
         /** {@inheritDoc} */
-        @Override
         public int read() {
             if (ready() == false) {
                 return -1;
@@ -2731,7 +2690,6 @@ public class StrBuilder implements CharSequence, Appendable {
         }
 
         /** {@inheritDoc} */
-        @Override
         public int read(char b[], int off, int len) {
             if (off < 0 || len < 0 || off > b.length ||
                     (off + len) > b.length || (off + len) < 0) {
@@ -2752,7 +2710,6 @@ public class StrBuilder implements CharSequence, Appendable {
         }
 
         /** {@inheritDoc} */
-        @Override
         public long skip(long n) {
             if (pos + n > StrBuilder.this.size()) {
                 n = StrBuilder.this.size() - pos;
@@ -2765,25 +2722,21 @@ public class StrBuilder implements CharSequence, Appendable {
         }
 
         /** {@inheritDoc} */
-        @Override
         public boolean ready() {
             return pos < StrBuilder.this.size();
         }
 
         /** {@inheritDoc} */
-        @Override
         public boolean markSupported() {
             return true;
         }
 
         /** {@inheritDoc} */
-        @Override
         public void mark(int readAheadLimit) {
             mark = pos;
         }
 
         /** {@inheritDoc} */
-        @Override
         public void reset() {
             pos = mark;
         }
@@ -2803,43 +2756,36 @@ public class StrBuilder implements CharSequence, Appendable {
         }
 
         /** {@inheritDoc} */
-        @Override
         public void close() {
             // do nothing
         }
 
         /** {@inheritDoc} */
-        @Override
         public void flush() {
             // do nothing
         }
 
         /** {@inheritDoc} */
-        @Override
         public void write(int c) {
             StrBuilder.this.append((char) c);
         }
 
         /** {@inheritDoc} */
-        @Override
         public void write(char[] cbuf) {
             StrBuilder.this.append(cbuf);
         }
 
         /** {@inheritDoc} */
-        @Override
         public void write(char[] cbuf, int off, int len) {
             StrBuilder.this.append(cbuf, off, len);
         }
 
         /** {@inheritDoc} */
-        @Override
         public void write(String str) {
             StrBuilder.this.append(str);
         }
 
         /** {@inheritDoc} */
-        @Override
         public void write(String str, int off, int len) {
             StrBuilder.this.append(str, off, len);
         }

@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Comparator;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 /** 
  * Assists in implementing {@link java.lang.Comparable#compareTo(Object)} methods.
@@ -82,10 +83,14 @@ import org.apache.commons.lang3.ArrayUtils;
  * @see java.lang.Object#hashCode()
  * @see EqualsBuilder
  * @see HashCodeBuilder
+ * @author Apache Software Foundation
+ * @author <a href="mailto:steve.downey@netfolio.com">Steve Downey</a>
+ * @author Gary Gregory
+ * @author Pete Gieser
  * @since 1.0
- * @version $Id: CompareToBuilder.java 1090813 2011-04-10 15:03:23Z mbenson $
+ * @version $Id: CompareToBuilder.java 1067685 2011-02-06 15:38:57Z niallp $
  */
-public class CompareToBuilder implements Builder<Integer> {
+public class CompareToBuilder {
     
     /**
      * Current state of the comparison as appended fields are checked.
@@ -132,7 +137,7 @@ public class CompareToBuilder implements Builder<Integer> {
      *  with <code>lhs</code>
      */
     public static int reflectionCompare(Object lhs, Object rhs) {
-        return reflectionCompare(lhs, rhs, false, null);
+        return reflectionCompare(lhs, rhs, false, null, null);
     }
 
     /**
@@ -164,7 +169,7 @@ public class CompareToBuilder implements Builder<Integer> {
      *  with <code>lhs</code>
      */
     public static int reflectionCompare(Object lhs, Object rhs, boolean compareTransients) {
-        return reflectionCompare(lhs, rhs, compareTransients, null);
+        return reflectionCompare(lhs, rhs, compareTransients, null, null);
     }
 
     /**
@@ -196,7 +201,7 @@ public class CompareToBuilder implements Builder<Integer> {
      *  with <code>lhs</code>
      * @since 2.2
      */
-    public static int reflectionCompare(Object lhs, Object rhs, Collection<String> excludeFields) {
+    public static int reflectionCompare(Object lhs, Object rhs, Collection /*String*/ excludeFields) {
         return reflectionCompare(lhs, rhs, ReflectionToStringBuilder.toNoNullStringArray(excludeFields));
     }
 
@@ -229,8 +234,45 @@ public class CompareToBuilder implements Builder<Integer> {
      *  with <code>lhs</code>
      * @since 2.2
      */
-    public static int reflectionCompare(Object lhs, Object rhs, String... excludeFields) {
+    public static int reflectionCompare(Object lhs, Object rhs, String[] excludeFields) {
         return reflectionCompare(lhs, rhs, false, null, excludeFields);
+    }
+
+    /**
+     * <p>Compares two <code>Object</code>s via reflection.</p>
+     *
+     * <p>Fields can be private, thus <code>AccessibleObject.setAccessible</code>
+     * is used to bypass normal access control checks. This will fail under a 
+     * security manager unless the appropriate permissions are set.</p>
+     *
+     * <ul>
+     * <li>Static fields will not be compared</li>
+     * <li>If the <code>compareTransients</code> is <code>true</code>,
+     *     compares transient members.  Otherwise ignores them, as they
+     *     are likely derived fields.</li>
+     * <li>Compares superclass fields up to and including <code>reflectUpToClass</code>.
+     *     If <code>reflectUpToClass</code> is <code>null</code>, compares all superclass fields.</li>
+     * </ul>
+     *
+     * <p>If both <code>lhs</code> and <code>rhs</code> are <code>null</code>,
+     * they are considered equal.</p>
+     *
+     * @param lhs  left-hand object
+     * @param rhs  right-hand object
+     * @param compareTransients  whether to compare transient fields
+     * @param reflectUpToClass  last superclass for which fields are compared
+     * @return a negative integer, zero, or a positive integer as <code>lhs</code>
+     *  is less than, equal to, or greater than <code>rhs</code>
+     * @throws NullPointerException  if either <code>lhs</code> or <code>rhs</code>
+     *  (but not both) is <code>null</code>
+     * @throws ClassCastException  if <code>rhs</code> is not assignment-compatible
+     *  with <code>lhs</code>
+     * @since 2.0
+     */
+    public static int reflectionCompare(Object lhs, Object rhs, boolean compareTransients, 
+                                        Class reflectUpToClass) 
+    {
+        return reflectionCompare(lhs, rhs, compareTransients, reflectUpToClass, null);
     }
 
     /**
@@ -263,14 +305,14 @@ public class CompareToBuilder implements Builder<Integer> {
      *  (but not both) is <code>null</code>
      * @throws ClassCastException  if <code>rhs</code> is not assignment-compatible
      *  with <code>lhs</code>
-     * @since 2.2 (2.0 as <code>reflectionCompare(Object, Object, boolean, Class)</code>)
+     * @since 2.2
      */
     public static int reflectionCompare(
         Object lhs, 
         Object rhs, 
         boolean compareTransients, 
-        Class<?> reflectUpToClass, 
-        String... excludeFields) {
+        Class reflectUpToClass, 
+        String[] excludeFields) {
 
         if (lhs == rhs) {
             return 0;
@@ -278,7 +320,7 @@ public class CompareToBuilder implements Builder<Integer> {
         if (lhs == null || rhs == null) {
             throw new NullPointerException();
         }
-        Class<?> lhsClazz = lhs.getClass();
+        Class lhsClazz = lhs.getClass();
         if (!lhsClazz.isInstance(rhs)) {
             throw new ClassCastException();
         }
@@ -305,7 +347,7 @@ public class CompareToBuilder implements Builder<Integer> {
     private static void reflectionAppend(
         Object lhs,
         Object rhs,
-        Class<?> clazz,
+        Class clazz,
         CompareToBuilder builder,
         boolean useTransients,
         String[] excludeFields) {
@@ -395,7 +437,7 @@ public class CompareToBuilder implements Builder<Integer> {
      *  with <code>lhs</code>
      * @since 2.0
      */
-    public CompareToBuilder append(Object lhs, Object rhs, Comparator<?> comparator) {
+    public CompareToBuilder append(Object lhs, Object rhs, Comparator comparator) {
         if (comparison != 0) {
             return this;
         }
@@ -438,13 +480,9 @@ public class CompareToBuilder implements Builder<Integer> {
         } else {
             // the simple case, not an array, just test the element
             if (comparator == null) {
-                @SuppressWarnings("unchecked") // assume this can be done; if not throw CCE as per Javadoc
-                final Comparable<Object> comparable = (Comparable<Object>) lhs;
-                comparison = comparable.compareTo(rhs);
+                comparison = ((Comparable) lhs).compareTo(rhs);
             } else {
-                @SuppressWarnings("unchecked") // assume this can be done; if not throw CCE as per Javadoc
-                final Comparator<Object> comparator2 = (Comparator<Object>) comparator;
-                comparison = comparator2.compare(lhs, rhs);
+                comparison = comparator.compare(lhs, rhs);
             }
         }
         return this;
@@ -548,7 +586,7 @@ public class CompareToBuilder implements Builder<Integer> {
         if (comparison != 0) {
             return this;
         }
-        comparison = Double.compare(lhs, rhs);
+        comparison = NumberUtils.compare(lhs, rhs);
         return this;
     }
 
@@ -569,7 +607,7 @@ public class CompareToBuilder implements Builder<Integer> {
         if (comparison != 0) {
             return this;
         }
-        comparison = Float.compare(lhs, rhs);
+        comparison = NumberUtils.compare(lhs, rhs);
         return this;
     }
 
@@ -644,7 +682,7 @@ public class CompareToBuilder implements Builder<Integer> {
      *  with <code>lhs</code>
      * @since 2.0
      */
-    public CompareToBuilder append(Object[] lhs, Object[] rhs, Comparator<?> comparator) {
+    public CompareToBuilder append(Object[] lhs, Object[] rhs, Comparator comparator) {
         if (comparison != 0) {
             return this;
         }
@@ -1002,18 +1040,5 @@ public class CompareToBuilder implements Builder<Integer> {
         return comparison;
     }
 
-    /**
-     * Returns a negative integer, a positive integer, or zero as
-     * the <code>builder</code> has judged the "left-hand" side
-     * as less than, greater than, or equal to the "right-hand"
-     * side.
-     * 
-     * @return final comparison result
-     * 
-     * @since 3.0
-     */
-    public Integer build() {
-        return Integer.valueOf(toComparison());
-    }
 }
 

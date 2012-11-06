@@ -21,7 +21,7 @@ import junit.framework.TestCase;
 /**
  * JUnit tests.
  * 
- * @version $Id: MutableIntTest.java 892118 2009-12-18 03:39:13Z sebb $
+ * @version $Id: MutableIntTest.java 1067685 2011-02-06 15:38:57Z niallp $
  * @see MutableInt
  */
 public class MutableIntTest extends TestCase {
@@ -67,6 +67,10 @@ public class MutableIntTest extends TestCase {
             mutNum.setValue(null);
             fail();
         } catch (NullPointerException ex) {}
+        try {
+            mutNum.setValue("0");
+            fail();
+        } catch (ClassCastException ex) {}
     }
 
     public void testEquals() {
@@ -114,6 +118,14 @@ public class MutableIntTest extends TestCase {
             mutNum.compareTo(null);
             fail();
         } catch (NullPointerException ex) {}
+        try {
+            mutNum.compareTo(new Integer(0));
+            fail();
+        } catch (ClassCastException ex) {}
+        try {
+            mutNum.compareTo("0");
+            fail();
+        } catch (ClassCastException ex) {}
     }
 
     public void testPrimitiveValues() {

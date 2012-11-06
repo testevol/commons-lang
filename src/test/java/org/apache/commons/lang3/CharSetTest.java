@@ -20,12 +20,19 @@ package org.apache.commons.lang3;
 
 import java.lang.reflect.Modifier;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.CharRange;
+import org.apache.commons.lang3.CharSet;
+import org.apache.commons.lang3.SerializationUtils;
+
 import junit.framework.TestCase;
 
 /**
  * Unit tests {@link org.apache.commons.lang3.CharSet}.
  *
- * @version $Id: CharSetTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @author Phil Steitz
+ * @version $Id: CharSetTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class CharSetTest extends TestCase {
     

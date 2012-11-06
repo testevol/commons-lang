@@ -28,12 +28,17 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 
+import org.apache.commons.lang3.SerializationException;
+import org.apache.commons.lang3.SerializationUtils;
+
 import junit.framework.TestCase;
 
 /**
  * Unit tests {@link org.apache.commons.lang3.SerializationUtils}.
  *
- * @version $Id: SerializationUtilsTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @author <a href="mailto:ridesmet@users.sourceforge.net">Ringo De Smet</a>
+ * @version $Id: SerializationUtilsTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class SerializationUtilsTest extends TestCase {
 
@@ -42,19 +47,19 @@ public class SerializationUtilsTest extends TestCase {
   
     private String iString;
     private Integer iInteger;
-    private HashMap<Object, Object> iMap;
+    private HashMap iMap;
 
     public SerializationUtilsTest(String name) {
         super(name);
     }
 
-    @Override
+
     protected void setUp() throws Exception {
         super.setUp();
 
         iString = "foo";
         iInteger = new Integer(7);
-        iMap = new HashMap<Object, Object>();
+        iMap = new HashMap();
         iMap.put("FOO", iString);
         iMap.put("BAR", iInteger);
     }
@@ -62,7 +67,7 @@ public class SerializationUtilsTest extends TestCase {
     //-----------------------------------------------------------------------
     public void testConstructor() {
         assertNotNull(new SerializationUtils());
-        Constructor<?>[] cons = SerializationUtils.class.getDeclaredConstructors();
+        Constructor[] cons = SerializationUtils.class.getDeclaredConstructors();
         assertEquals(1, cons.length);
         assertEquals(true, Modifier.isPublic(cons[0].getModifiers()));
         assertEquals(true, Modifier.isPublic(SerializationUtils.class.getModifiers()));
@@ -160,7 +165,6 @@ public class SerializationUtilsTest extends TestCase {
         // forces an IOException when the ObjectOutputStream is created, to test not closing the stream
         // in the finally block
         OutputStream streamTest = new OutputStream() {
-            @Override
             public void write(int arg0) throws IOException {
                 throw new IOException(SERIALIZE_IO_EXCEPTION_MESSAGE);
             }
@@ -185,9 +189,9 @@ public class SerializationUtilsTest extends TestCase {
         ByteArrayInputStream inTest = new ByteArrayInputStream(streamReal.toByteArray());
         Object test = SerializationUtils.deserialize(inTest);
         assertNotNull(test);
-        assertTrue(test instanceof HashMap<?, ?>);
+        assertTrue(test instanceof HashMap);
         assertTrue(test != iMap);
-        HashMap<?, ?> testMap = (HashMap<?, ?>) test;
+        HashMap testMap = (HashMap) test;
         assertEquals(iString, testMap.get("FOO"));
         assertTrue(iString != testMap.get("FOO"));
         assertEquals(iInteger, testMap.get("BAR"));
@@ -234,7 +238,6 @@ public class SerializationUtilsTest extends TestCase {
 
         ByteArrayInputStream inTest = new ByteArrayInputStream(streamReal.toByteArray());
         try {
-            @SuppressWarnings("unused")
             Object test = SerializationUtils.deserialize(inTest);
         } catch(SerializationException se) {
             assertEquals("java.lang.ClassNotFoundException: " + CLASS_NOT_FOUND_MESSAGE, se.getMessage());
@@ -296,9 +299,9 @@ public class SerializationUtilsTest extends TestCase {
 
         Object test = SerializationUtils.deserialize(streamReal.toByteArray());
         assertNotNull(test);
-        assertTrue(test instanceof HashMap<?, ?>);
+        assertTrue(test instanceof HashMap);
         assertTrue(test != iMap);
-        HashMap<?, ?> testMap = (HashMap<?, ?>) test;
+        HashMap testMap = (HashMap) test;
         assertEquals(iString, testMap.get("FOO"));
         assertTrue(iString != testMap.get("FOO"));
         assertEquals(iInteger, testMap.get("BAR"));
@@ -340,9 +343,9 @@ public class SerializationUtilsTest extends TestCase {
     public void testClone() throws Exception {
         Object test = SerializationUtils.clone(iMap);
         assertNotNull(test);
-        assertTrue(test instanceof HashMap<?,?>);
+        assertTrue(test instanceof HashMap);
         assertTrue(test != iMap);
-        HashMap<?, ?> testMap = (HashMap<?, ?>) test;
+        HashMap testMap = (HashMap) test;
         assertEquals(iString, testMap.get("FOO"));
         assertTrue(iString != testMap.get("FOO"));
         assertEquals(iInteger, testMap.get("BAR"));
@@ -367,7 +370,6 @@ public class SerializationUtilsTest extends TestCase {
 
 }
 
-@SuppressWarnings("serial")
 class ClassNotFoundSerialization implements Serializable
 {
 

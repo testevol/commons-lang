@@ -23,9 +23,10 @@ import java.io.Serializable;
  * A mutable <code>Object</code> wrapper.
  * 
  * @since 2.1
- * @version $Id: MutableObject.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @version $Id: MutableObject.java 1067685 2011-02-06 15:38:57Z niallp $
  */
-public class MutableObject<T> implements Mutable<T>, Serializable {
+public class MutableObject implements Mutable, Serializable {
 
     /**
      * Required for serialization support.
@@ -35,7 +36,7 @@ public class MutableObject<T> implements Mutable<T>, Serializable {
     private static final long serialVersionUID = 86241875189L;
 
     /** The mutable value. */
-    private T value;
+    private Object value;
 
     /**
      * Constructs a new MutableObject with the default value of <code>null</code>.
@@ -49,7 +50,7 @@ public class MutableObject<T> implements Mutable<T>, Serializable {
      * 
      * @param value  the initial value to store
      */
-    public MutableObject(T value) {
+    public MutableObject(Object value) {
         super();
         this.value = value;
     }
@@ -60,7 +61,7 @@ public class MutableObject<T> implements Mutable<T>, Serializable {
      * 
      * @return the value, may be null
      */
-    public T getValue() {
+    public Object getValue() {
         return this.value;
     }
 
@@ -69,37 +70,25 @@ public class MutableObject<T> implements Mutable<T>, Serializable {
      * 
      * @param value  the value to set
      */
-    public void setValue(T value) {
+    public void setValue(Object value) {
         this.value = value;
     }
 
     //-----------------------------------------------------------------------
     /**
-     * <p>
      * Compares this object against the specified object. The result is <code>true</code> if and only if the argument
-     * is not <code>null</code> and is a <code>MutableObject</code> object that contains the same <code>T</code>
+     * is not <code>null</code> and is a <code>MutableObject</code> object that contains the same <code>Object</code>
      * value as this object.
-     * </p>
      * 
-     * @param obj  the object to compare with, <code>null</code> returns <code>false</code>
-     * @return  <code>true</code> if the objects are the same;
-     *          <code>true</code> if the objects have equivalent <code>value</code> fields;
-     *          <code>false</code> otherwise.
+     * @param obj  the object to compare with, null returns false
+     * @return <code>true</code> if the objects are the same; <code>false</code> otherwise.
      */
-    @Override
     public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+        if (obj instanceof MutableObject) {
+            Object other = ((MutableObject) obj).value;
+            return value == other || (value != null && value.equals(other));
         }
-        if (this == obj) {
-            return true;
-        }
-        if (this.getClass() == obj.getClass()) {
-            MutableObject<?> that = (MutableObject<?>) obj;
-            return this.value.equals(that.value);
-        } else {
-            return false;
-        }
+        return false;
     }
 
     /**
@@ -107,7 +96,6 @@ public class MutableObject<T> implements Mutable<T>, Serializable {
      * 
      * @return the value's hash code or <code>0</code> if the value is <code>null</code>.
      */
-    @Override
     public int hashCode() {
         return value == null ? 0 : value.hashCode();
     }
@@ -118,7 +106,6 @@ public class MutableObject<T> implements Mutable<T>, Serializable {
      * 
      * @return the mutable value as a string
      */
-    @Override
     public String toString() {
         return value == null ? "null" : value.toString();
     }

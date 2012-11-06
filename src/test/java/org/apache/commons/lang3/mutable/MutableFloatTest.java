@@ -21,7 +21,7 @@ import junit.framework.TestCase;
 /**
  * JUnit tests.
  * 
- * @version $Id: MutableFloatTest.java 931457 2010-04-07 07:32:08Z bayard $
+ * @version $Id: MutableFloatTest.java 1067685 2011-02-06 15:38:57Z niallp $
  * @see MutableFloat
  */
 public class MutableFloatTest extends TestCase {
@@ -67,6 +67,10 @@ public class MutableFloatTest extends TestCase {
             mutNum.setValue(null);
             fail();
         } catch (NullPointerException ex) {}
+        try {
+            mutNum.setValue("0");
+            fail();
+        } catch (ClassCastException ex) {}
     }
 
     public void testNanInfinite() {
@@ -118,6 +122,14 @@ public class MutableFloatTest extends TestCase {
             mutNum.compareTo(null);
             fail();
         } catch (NullPointerException ex) {}
+        try {
+            mutNum.compareTo(new Float(0f));
+            fail();
+        } catch (ClassCastException ex) {}
+        try {
+            mutNum.compareTo("0");
+            fail();
+        } catch (ClassCastException ex) {}
     }
 
     public void testPrimitiveValues() {

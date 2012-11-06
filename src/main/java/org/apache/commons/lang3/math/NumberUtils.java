@@ -24,8 +24,16 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * <p>Provides extra functionality for Java Number classes.</p>
  *
+ * @author Apache Software Foundation
+ * @author <a href="mailto:rand_mcneely@yahoo.com">Rand McNeely</a>
+ * @author <a href="mailto:steve.downey@netfolio.com">Steve Downey</a>
+ * @author Eric Pugh
+ * @author Phil Steitz
+ * @author Matthew Hawthorne
+ * @author <a href="mailto:ggregory@seagullsw.com">Gary Gregory</a>
+ * @author <a href="mailto:fredrik@westermarck.com">Fredrik Westermarck</a>
  * @since 2.0
- * @version $Id: NumberUtils.java 1089736 2011-04-07 04:39:33Z bayard $
+ * @version $Id: NumberUtils.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class NumberUtils {
     
@@ -48,11 +56,11 @@ public class NumberUtils {
     /** Reusable Short constant for minus one. */
     public static final Short SHORT_MINUS_ONE = new Short((short) -1);
     /** Reusable Byte constant for zero. */
-    public static final Byte BYTE_ZERO = Byte.valueOf((byte) 0);
+    public static final Byte BYTE_ZERO = new Byte((byte) 0);
     /** Reusable Byte constant for one. */
-    public static final Byte BYTE_ONE = Byte.valueOf((byte) 1);
+    public static final Byte BYTE_ONE = new Byte((byte) 1);
     /** Reusable Byte constant for minus one. */
-    public static final Byte BYTE_MINUS_ONE = Byte.valueOf((byte) -1);
+    public static final Byte BYTE_MINUS_ONE = new Byte((byte) -1);
     /** Reusable Double constant for zero. */
     public static final Double DOUBLE_ZERO = new Double(0.0d);
     /** Reusable Double constant for one. */
@@ -83,6 +91,28 @@ public class NumberUtils {
      * <code>zero</code> if the conversion fails.</p>
      *
      * <p>If the string is <code>null</code>, <code>zero</code> is returned.</p>
+     * 
+     * <pre>
+     *   NumberUtils.stringToInt(null) = 0
+     *   NumberUtils.stringToInt("")   = 0
+     *   NumberUtils.stringToInt("1")  = 1
+     * </pre>
+     *
+     * @param str  the string to convert, may be null
+     * @return the int represented by the string, or <code>zero</code> if
+     *  conversion fails
+     * @deprecated Use {@link #toInt(String)}
+     *  This method will be removed in Commons Lang 3.0
+     */
+    public static int stringToInt(String str) {
+        return toInt(str);
+    }
+
+    /**
+     * <p>Convert a <code>String</code> to an <code>int</code>, returning
+     * <code>zero</code> if the conversion fails.</p>
+     *
+     * <p>If the string is <code>null</code>, <code>zero</code> is returned.</p>
      *
      * <pre>
      *   NumberUtils.toInt(null) = 0
@@ -97,6 +127,28 @@ public class NumberUtils {
      */
     public static int toInt(String str) {
         return toInt(str, 0);
+    }
+
+    /**
+     * <p>Convert a <code>String</code> to an <code>int</code>, returning a
+     * default value if the conversion fails.</p>
+     *
+     * <p>If the string is <code>null</code>, the default value is returned.</p>
+     * 
+     * <pre>
+     *   NumberUtils.stringToInt(null, 1) = 1
+     *   NumberUtils.stringToInt("", 1)   = 1
+     *   NumberUtils.stringToInt("1", 0)  = 1
+     * </pre>
+     *
+     * @param str  the string to convert, may be null
+     * @param defaultValue  the default value
+     * @return the int represented by the string, or the default if conversion fails
+     * @deprecated Use {@link #toInt(String, int)}
+     *  This method will be removed in Commons Lang 3.0
+     */
+    public static int stringToInt(String str, int defaultValue) {
+        return toInt(str, defaultValue);
     }
 
     /**
@@ -504,8 +556,8 @@ public class NumberUtils {
                         && (numeric.charAt(0) == '-' && isDigits(numeric.substring(1)) || isDigits(numeric))) {
                         try {
                             return createLong(numeric);
-                        } catch (NumberFormatException nfe) { // NOPMD
-                            // Too big for a long
+                        } catch (NumberFormatException nfe) {
+                            //Too big for a long
                         }
                         return createBigInteger(numeric);
 
@@ -521,7 +573,7 @@ public class NumberUtils {
                             return f;
                         }
 
-                    } catch (NumberFormatException nfe) { // NOPMD
+                    } catch (NumberFormatException nfe) {
                         // ignore the bad number
                     }
                     //$FALL-THROUGH$
@@ -532,12 +584,12 @@ public class NumberUtils {
                         if (!(d.isInfinite() || (d.floatValue() == 0.0D && !allZeros))) {
                             return d;
                         }
-                    } catch (NumberFormatException nfe) { // NOPMD
+                    } catch (NumberFormatException nfe) {
                         // ignore the bad number
                     }
                     try {
                         return createBigDecimal(numeric);
-                    } catch (NumberFormatException e) { // NOPMD
+                    } catch (NumberFormatException e) {
                         // ignore the bad number
                     }
                     //$FALL-THROUGH$
@@ -557,12 +609,12 @@ public class NumberUtils {
                 //Must be an int,long,bigint
                 try {
                     return createInteger(str);
-                } catch (NumberFormatException nfe) { // NOPMD
+                } catch (NumberFormatException nfe) {
                     // ignore the bad number
                 }
                 try {
                     return createLong(str);
-                } catch (NumberFormatException nfe) { // NOPMD
+                } catch (NumberFormatException nfe) {
                     // ignore the bad number
                 }
                 return createBigInteger(str);
@@ -575,7 +627,7 @@ public class NumberUtils {
                     if (!(f.isInfinite() || (f.floatValue() == 0.0F && !allZeros))) {
                         return f;
                     }
-                } catch (NumberFormatException nfe) { // NOPMD
+                } catch (NumberFormatException nfe) {
                     // ignore the bad number
                 }
                 try {
@@ -583,7 +635,7 @@ public class NumberUtils {
                     if (!(d.isInfinite() || (d.doubleValue() == 0.0D && !allZeros))) {
                         return d;
                     }
-                } catch (NumberFormatException nfe) { // NOPMD
+                } catch (NumberFormatException nfe) {
                     // ignore the bad number
                 }
 
@@ -1274,6 +1326,131 @@ public class NumberUtils {
 
     //-----------------------------------------------------------------------
     /**
+     * <p>Compares two <code>doubles</code> for order.</p>
+     *
+     * <p>This method is more comprehensive than the standard Java greater
+     * than, less than and equals operators.</p>
+     * <ul>
+     *  <li>It returns <code>-1</code> if the first value is less than the second.</li>
+     *  <li>It returns <code>+1</code> if the first value is greater than the second.</li>
+     *  <li>It returns <code>0</code> if the values are equal.</li>
+     * </ul>
+     *
+     * <p>
+     * The ordering is as follows, largest to smallest:
+     * <ul>
+     *  <li>NaN
+     *  <li>Positive infinity
+     *  <li>Maximum double
+     *  <li>Normal positive numbers
+     *  <li>+0.0
+     *  <li>-0.0
+     *  <li>Normal negative numbers
+     *  <li>Minimum double (<code>-Double.MAX_VALUE</code>)
+     *  <li>Negative infinity
+     * </ul>
+     * </p>
+     *
+     * <p>Comparing <code>NaN</code> with <code>NaN</code> will
+     * return <code>0</code>.</p>
+     * 
+     * @param lhs  the first <code>double</code>
+     * @param rhs  the second <code>double</code>
+     * @return <code>-1</code> if lhs is less, <code>+1</code> if greater,
+     *  <code>0</code> if equal to rhs
+     */
+    public static int compare(double lhs, double rhs) {
+        if (lhs < rhs) {
+            return -1;
+        }
+        if (lhs > rhs) {
+            return +1;
+        }
+        // Need to compare bits to handle 0.0 == -0.0 being true
+        // compare should put -0.0 < +0.0
+        // Two NaNs are also == for compare purposes
+        // where NaN == NaN is false
+        long lhsBits = Double.doubleToLongBits(lhs);
+        long rhsBits = Double.doubleToLongBits(rhs);
+        if (lhsBits == rhsBits) {
+            return 0;
+        }
+        // Something exotic! A comparison to NaN or 0.0 vs -0.0
+        // Fortunately NaN's long is > than everything else
+        // Also negzeros bits < poszero
+        // NAN: 9221120237041090560
+        // MAX: 9218868437227405311
+        // NEGZERO: -9223372036854775808
+        if (lhsBits < rhsBits) {
+            return -1;
+        } else {
+            return +1;
+        }
+    }
+    
+    /**
+     * <p>Compares two floats for order.</p>
+     *
+     * <p>This method is more comprehensive than the standard Java greater than,
+     * less than and equals operators.</p>
+     * <ul>
+     *  <li>It returns <code>-1</code> if the first value is less than the second.
+     *  <li>It returns <code>+1</code> if the first value is greater than the second.
+     *  <li>It returns <code>0</code> if the values are equal.
+     * </ul>
+     *
+     * <p> The ordering is as follows, largest to smallest:
+     * <ul>
+     * <li>NaN
+     * <li>Positive infinity
+     * <li>Maximum float
+     * <li>Normal positive numbers
+     * <li>+0.0
+     * <li>-0.0
+     * <li>Normal negative numbers
+     * <li>Minimum float (<code>-Float.MAX_VALUE</code>)
+     * <li>Negative infinity
+     * </ul>
+     *
+     * <p>Comparing <code>NaN</code> with <code>NaN</code> will return
+     * <code>0</code>.</p>
+     * 
+     * @param lhs  the first <code>float</code>
+     * @param rhs  the second <code>float</code>
+     * @return <code>-1</code> if lhs is less, <code>+1</code> if greater,
+     *  <code>0</code> if equal to rhs
+     */
+    public static int compare(float lhs, float rhs) {
+        if (lhs < rhs) {
+            return -1;
+        }
+        if (lhs > rhs) {
+            return +1;
+        }
+        //Need to compare bits to handle 0.0 == -0.0 being true
+        // compare should put -0.0 < +0.0
+        // Two NaNs are also == for compare purposes
+        // where NaN == NaN is false
+        int lhsBits = Float.floatToIntBits(lhs);
+        int rhsBits = Float.floatToIntBits(rhs);
+        if (lhsBits == rhsBits) {
+            return 0;
+        }
+        //Something exotic! A comparison to NaN or 0.0 vs -0.0
+        //Fortunately NaN's int is > than everything else
+        //Also negzeros bits < poszero
+        //NAN: 2143289344
+        //MAX: 2139095039
+        //NEGZERO: -2147483648
+        if (lhsBits < rhsBits) {
+            return -1;
+        } else {
+            return +1;
+        }
+    }
+    
+    //-----------------------------------------------------------------------
+    /**
      * <p>Checks whether the <code>String</code> contains only
      * digit characters.</p>
      *
@@ -1401,8 +1578,8 @@ public class NumberUtils {
             }
             if (chars[i] == 'l'
                 || chars[i] == 'L') {
-                // not allowing L with an exponent or decimal point
-                return foundDigit && !hasExp && !hasDecPoint;
+                // not allowing L with an exponent
+                return foundDigit && !hasExp;
             }
             // last character is illegal
             return false;

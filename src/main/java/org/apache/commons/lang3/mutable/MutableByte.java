@@ -21,9 +21,10 @@ package org.apache.commons.lang3.mutable;
  * 
  * @see Byte
  * @since 2.1
- * @version $Id: MutableByte.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @version $Id: MutableByte.java 1067685 2011-02-06 15:38:57Z niallp $
  */
-public class MutableByte extends Number implements Comparable<MutableByte>, Mutable<Number> {
+public class MutableByte extends Number implements Comparable, Mutable {
 
     /**
      * Required for serialization support.
@@ -81,8 +82,8 @@ public class MutableByte extends Number implements Comparable<MutableByte>, Muta
      * 
      * @return the value as a Byte, never null
      */
-    public Byte getValue() {
-        return Byte.valueOf(this.value);
+    public Object getValue() {
+        return new Byte(this.value);
     }
 
     /**
@@ -99,9 +100,10 @@ public class MutableByte extends Number implements Comparable<MutableByte>, Muta
      * 
      * @param value  the value to set, not null
      * @throws NullPointerException if the object is null
+     * @throws ClassCastException if the type is not a {@link Number}
      */
-    public void setValue(Number value) {
-        this.value = value.byteValue();
+    public void setValue(Object value) {
+        setValue(((Number) value).byteValue());
     }
 
     //-----------------------------------------------------------------------
@@ -173,7 +175,6 @@ public class MutableByte extends Number implements Comparable<MutableByte>, Muta
      *
      * @return the numeric value represented by this object after conversion to type byte.
      */
-    @Override
     public byte byteValue() {
         return value;
     }
@@ -183,7 +184,6 @@ public class MutableByte extends Number implements Comparable<MutableByte>, Muta
      *
      * @return the numeric value represented by this object after conversion to type int.
      */
-    @Override
     public int intValue() {
         return value;
     }
@@ -193,7 +193,6 @@ public class MutableByte extends Number implements Comparable<MutableByte>, Muta
      *
      * @return the numeric value represented by this object after conversion to type long.
      */
-    @Override
     public long longValue() {
         return value;
     }
@@ -203,7 +202,6 @@ public class MutableByte extends Number implements Comparable<MutableByte>, Muta
      *
      * @return the numeric value represented by this object after conversion to type float.
      */
-    @Override
     public float floatValue() {
         return value;
     }
@@ -213,7 +211,6 @@ public class MutableByte extends Number implements Comparable<MutableByte>, Muta
      *
      * @return the numeric value represented by this object after conversion to type double.
      */
-    @Override
     public double doubleValue() {
         return value;
     }
@@ -225,7 +222,7 @@ public class MutableByte extends Number implements Comparable<MutableByte>, Muta
      * @return a Byte instance containing the value from this mutable
      */
     public Byte toByte() {
-        return Byte.valueOf(byteValue());
+        return new Byte(byteValue());
     }
 
     //-----------------------------------------------------------------------
@@ -237,7 +234,6 @@ public class MutableByte extends Number implements Comparable<MutableByte>, Muta
      * @param obj  the object to compare with, null returns false
      * @return <code>true</code> if the objects are the same; <code>false</code> otherwise.
      */
-    @Override
     public boolean equals(Object obj) {
         if (obj instanceof MutableByte) {
             return value == ((MutableByte) obj).byteValue();
@@ -250,7 +246,6 @@ public class MutableByte extends Number implements Comparable<MutableByte>, Muta
      * 
      * @return a suitable hash code
      */
-    @Override
     public int hashCode() {
         return value;
     }
@@ -259,10 +254,12 @@ public class MutableByte extends Number implements Comparable<MutableByte>, Muta
     /**
      * Compares this mutable to another in ascending order.
      * 
-     * @param other  the other mutable to compare to, not null
+     * @param obj the other mutable to compare to, not null
      * @return negative if this is less, zero if equal, positive if greater
+     * @throws ClassCastException if the argument is not a MutableByte
      */
-    public int compareTo(MutableByte other) {
+    public int compareTo(Object obj) {
+        MutableByte other = (MutableByte) obj;
         byte anotherVal = other.value;
         return value < anotherVal ? -1 : (value == anotherVal ? 0 : 1);
     }
@@ -273,7 +270,6 @@ public class MutableByte extends Number implements Comparable<MutableByte>, Muta
      * 
      * @return the mutable value as a string
      */
-    @Override
     public String toString() {
         return String.valueOf(value);
     }

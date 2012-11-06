@@ -20,10 +20,16 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Random;
 
+import org.apache.commons.lang3.RandomStringUtils;
+
+
 /**
  * Unit tests {@link org.apache.commons.lang3.RandomStringUtils}.
  *
- * @version $Id: RandomStringUtilsTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author <a href="mailto:steven@caswell.name">Steven Caswell</a>
+ * @author <a href="mailto:ridesmet@users.sourceforge.net">Ringo De Smet</a>
+ * @author Phil Steitz
+ * @version $Id: RandomStringUtilsTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class RandomStringUtilsTest extends junit.framework.TestCase {
     /**
@@ -36,7 +42,7 @@ public class RandomStringUtilsTest extends junit.framework.TestCase {
     //-----------------------------------------------------------------------
     public void testConstructor() {
         assertNotNull(new RandomStringUtils());
-        Constructor<?>[] cons = RandomStringUtils.class.getDeclaredConstructors();
+        Constructor[] cons = RandomStringUtils.class.getDeclaredConstructors();
         assertEquals(1, cons.length);
         assertEquals(true, Modifier.isPublic(cons[0].getModifiers()));
         assertEquals(true, Modifier.isPublic(RandomStringUtils.class.getModifiers()));
@@ -286,8 +292,8 @@ public class RandomStringUtilsTest extends junit.framework.TestCase {
         double sumSq = 0.0d;
         double dev = 0.0d;
         for (int i = 0; i < observed.length; i++) {
-            dev = (observed[i] - expected[i]);
-            sumSq += dev * dev / expected[i];
+            dev = (double) (observed[i] - expected[i]);
+            sumSq += dev * dev / (double) expected[i];
         }
         return sumSq;
     }           

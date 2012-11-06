@@ -22,7 +22,8 @@ import junit.framework.TestCase;
 /**
  * TestCase for StopWatch.
  *
- * @version $Id: StopWatchTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @version $Id: StopWatchTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class StopWatchTest extends TestCase {
 

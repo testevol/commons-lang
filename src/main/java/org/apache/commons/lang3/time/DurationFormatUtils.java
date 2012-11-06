@@ -23,6 +23,7 @@ import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrBuilder;
 
 /**
  * <p>Duration formatting utilities and constants. The following table describes the tokens 
@@ -38,8 +39,13 @@ import org.apache.commons.lang3.StringUtils;
  *  <tr><td>S</td><td>milliseconds</td></tr>
  * </table>
  *
+ * @author Apache Software Foundation
+ * @author Apache Ant - DateUtils
+ * @author <a href="mailto:sbailliez@apache.org">Stephane Bailliez</a>
+ * @author <a href="mailto:stefan.bodewig@epost.de">Stefan Bodewig</a>
+ * @author <a href="mailto:ggregory@seagullsw.com">Gary Gregory</a>
  * @since 2.1
- * @version $Id: DurationFormatUtils.java 1144993 2011-07-11 00:51:16Z ggregory $
+ * @version $Id: DurationFormatUtils.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class DurationFormatUtils {
 
@@ -70,7 +76,7 @@ public class DurationFormatUtils {
      * <i>H</i>:<i>m</i>:<i>s</i>.<i>S</i>.</p>
      * 
      * @param durationMillis  the duration to format
-     * @return the formatted duration, not null
+     * @return the time as a String
      */
     public static String formatDurationHMS(long durationMillis) {
         return formatDuration(durationMillis, "H:mm:ss.SSS");
@@ -85,7 +91,7 @@ public class DurationFormatUtils {
      * ISO format pattern, such as P7D6TH5M4.321S.</p>
      * 
      * @param durationMillis  the duration to format
-     * @return the formatted duration, not null
+     * @return the time as a String
      */
     public static String formatDurationISO(long durationMillis) {
         return formatDuration(durationMillis, ISO_EXTENDED_FORMAT_PATTERN, false);
@@ -99,8 +105,8 @@ public class DurationFormatUtils {
      * format pattern. Months and larger are not used.</p>
      * 
      * @param durationMillis  the duration to format
-     * @param format  the way in which to format the duration, not null
-     * @return the formatted duration, not null
+     * @param format  the way in which to format the duration
+     * @return the time as a String
      */
     public static String formatDuration(long durationMillis, String format) {
         return formatDuration(durationMillis, format, true);
@@ -115,9 +121,9 @@ public class DurationFormatUtils {
      * format pattern. Months and larger are not used.</p>
      * 
      * @param durationMillis  the duration to format
-     * @param format  the way in which to format the duration, not null
+     * @param format  the way in which to format the duration
      * @param padWithZeros  whether to pad the left hand side of numbers with 0's
-     * @return the formatted duration, not null
+     * @return the time as a String
      */
     public static String formatDuration(long durationMillis, String format, boolean padWithZeros) {
 
@@ -161,7 +167,7 @@ public class DurationFormatUtils {
      * @param durationMillis  the elapsed time to report in milliseconds
      * @param suppressLeadingZeroElements  suppresses leading 0 elements
      * @param suppressTrailingZeroElements  suppresses trailing 0 elements
-     * @return the formatted text in days/hours/minutes/seconds, not null
+     * @return the formatted text in days/hours/minutes/seconds
      */
     public static String formatDurationWords(
         long durationMillis,
@@ -224,7 +230,7 @@ public class DurationFormatUtils {
      * 
      * @param startMillis  the start of the duration to format
      * @param endMillis  the end of the duration to format
-     * @return the formatted duration, not null
+     * @return the time as a String
      */
     public static String formatPeriodISO(long startMillis, long endMillis) {
         return formatPeriod(startMillis, endMillis, ISO_EXTENDED_FORMAT_PATTERN, false, TimeZone.getDefault());
@@ -236,8 +242,8 @@ public class DurationFormatUtils {
      * 
      * @param startMillis  the start of the duration
      * @param endMillis  the end of the duration
-     * @param format  the way in which to format the duration, not null
-     * @return the formatted duration, not null
+     * @param format  the way in which to format the duration
+     * @return the time as a String
      */
     public static String formatPeriod(long startMillis, long endMillis, String format) {
         return formatPeriod(startMillis, endMillis, format, true, TimeZone.getDefault());
@@ -261,10 +267,10 @@ public class DurationFormatUtils {
      * 
      * @param startMillis  the start of the duration
      * @param endMillis  the end of the duration
-     * @param format  the way in which to format the duration, not null
-     * @param padWithZeros  whether to pad the left hand side of numbers with 0's
-     * @param timezone  the millis are defined in
-     * @return the formatted duration, not null
+     * @param format  the way in which to format the duration
+     * @param padWithZeros whether to pad the left hand side of numbers with 0's
+     * @param timezone the millis are defined in
+     * @return the time as a String
      */
     public static String formatPeriod(long startMillis, long endMillis, String format, boolean padWithZeros, 
             TimeZone timezone) {
@@ -343,10 +349,12 @@ public class DurationFormatUtils {
                     days += start.getActualMaximum(Calendar.DAY_OF_YEAR) - start.get(Calendar.DAY_OF_YEAR);
                     
                     // Not sure I grok why this is needed, but the brutal tests show it is
-                    if (start instanceof GregorianCalendar &&
-                            start.get(Calendar.MONTH) == Calendar.FEBRUARY &&
-                            start.get(Calendar.DAY_OF_MONTH) == 29) {
-                        days += 1;
+                    if(start instanceof GregorianCalendar) {
+                        if( (start.get(Calendar.MONTH) == Calendar.FEBRUARY) &&
+                            (start.get(Calendar.DAY_OF_MONTH) == 29 ) )
+                        {
+                            days += 1;
+                        }
                     }
                     
                     start.add(Calendar.YEAR, 1);
@@ -413,7 +421,7 @@ public class DurationFormatUtils {
      */
     static String format(Token[] tokens, int years, int months, int days, int hours, int minutes, int seconds,
             int milliseconds, boolean padWithZeros) {
-        StringBuffer buffer = new StringBuffer();
+        StrBuilder buffer = new StrBuilder();
         boolean lastOutputSeconds = false;
         int sz = tokens.length;
         for (int i = 0; i < sz; i++) {
@@ -477,12 +485,12 @@ public class DurationFormatUtils {
     /**
      * Parses a classic date format string into Tokens
      *
-     * @param format  the format to parse, not null
+     * @param format to parse
      * @return array of Token[]
      */
     static Token[] lexx(String format) {
         char[] array = format.toCharArray();
-        ArrayList<Token> list = new ArrayList<Token>(array.length);
+        ArrayList list = new ArrayList(array.length);
 
         boolean inLiteral = false;
         StringBuffer buffer = null;
@@ -533,10 +541,9 @@ public class DurationFormatUtils {
                 buffer = null; 
             }
         }
-        return list.toArray( new Token[list.size()] );
+        return (Token[]) list.toArray( new Token[list.size()] );
     }
 
-    //-----------------------------------------------------------------------
     /**
      * Element that is parsed from the format pattern.
      */
@@ -559,7 +566,7 @@ public class DurationFormatUtils {
             return false;
         }
 
-        private final Object value;
+        private Object value;
         private int count;
 
         /**
@@ -615,7 +622,6 @@ public class DurationFormatUtils {
          * @param obj2 Object to consider equality of
          * @return boolean <code>true</code> if equal
          */
-        @Override
         public boolean equals(Object obj2) {
             if (obj2 instanceof Token) {
                 Token tok2 = (Token) obj2;
@@ -637,13 +643,12 @@ public class DurationFormatUtils {
         }
 
         /**
-         * Returns a hash code for the token equal to the 
-         * hash code for the token's value. Thus 'TT' and 'TTTT' 
-         * will have the same hash code. 
+         * Returns a hashcode for the token equal to the 
+         * hashcode for the token's value. Thus 'TT' and 'TTTT' 
+         * will have the same hashcode. 
          *
-         * @return The hash code for the token
+         * @return The hashcode for the token
          */
-        @Override
         public int hashCode() {
             return this.value.hashCode();
         }
@@ -653,7 +658,6 @@ public class DurationFormatUtils {
          *
          * @return String representation of the token
          */
-        @Override
         public String toString() {
             return StringUtils.repeat(this.value.toString(), this.count);
         }

@@ -19,12 +19,12 @@
 
 package org.apache.commons.lang3;
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_4;
-
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Locale;
+
+import org.apache.commons.lang3.SystemUtils;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
@@ -34,17 +34,20 @@ import junit.framework.TestCase;
  * 
  * Only limited testing can be performed.
  * 
- * @version $Id: SystemUtilsTest.java 1144929 2011-07-10 18:26:16Z ggregory $
+ * @author Apache Software Foundation
+ * @author Tetsuya Kaneuchi
+ * @author Gary D. Gregory
+ * @version $Id: SystemUtilsTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class SystemUtilsTest extends TestCase {
 
-	public SystemUtilsTest(String name) {
-		super(name);
+    public SystemUtilsTest(String name) {
+        super(name);
     }
 
     public void testConstructor() {
         assertNotNull(new SystemUtils());
-        Constructor<?>[] cons = SystemUtils.class.getDeclaredConstructors();
+        Constructor[] cons = SystemUtils.class.getDeclaredConstructors();
         assertEquals(1, cons.length);
         assertEquals(true, Modifier.isPublic(cons[0].getModifiers()));
         assertEquals(true, Modifier.isPublic(SystemUtils.class.getModifiers()));
@@ -184,6 +187,62 @@ public class SystemUtilsTest extends TestCase {
         } else {
             System.out.println("Can't test IS_OS value");
         }
+    }
+
+    public void testJavaVersionAsFloat() {
+        assertEquals(0f, SystemUtils.toJavaVersionFloat(null), 0.000001f);
+        assertEquals(0f, SystemUtils.toJavaVersionFloat(""), 0.000001f);
+        assertEquals(0f, SystemUtils.toJavaVersionFloat("0"), 0.000001f);
+        assertEquals(1.1f, SystemUtils.toJavaVersionFloat("1.1"), 0.000001f);
+        assertEquals(1.2f, SystemUtils.toJavaVersionFloat("1.2"), 0.000001f);
+        assertEquals(1.3f, SystemUtils.toJavaVersionFloat("1.3.0"), 0.000001f);
+        assertEquals(1.31f, SystemUtils.toJavaVersionFloat("1.3.1"), 0.000001f);
+        assertEquals(1.4f, SystemUtils.toJavaVersionFloat("1.4.0"), 0.000001f);
+        assertEquals(1.41f, SystemUtils.toJavaVersionFloat("1.4.1"), 0.000001f);
+        assertEquals(1.42f, SystemUtils.toJavaVersionFloat("1.4.2"), 0.000001f);
+        assertEquals(1.5f, SystemUtils.toJavaVersionFloat("1.5.0"), 0.000001f);
+        assertEquals(1.6f, SystemUtils.toJavaVersionFloat("1.6.0"), 0.000001f);
+        assertEquals(1.31f, SystemUtils.toJavaVersionFloat("JavaVM-1.3.1"), 0.000001f);
+        assertEquals(1.3f, SystemUtils.toJavaVersionFloat("1.3.0 subset"), 0.000001f);
+        // This used to return 0f in [lang] version 2.5:
+        assertEquals(1.3f, SystemUtils.toJavaVersionFloat("XXX-1.3.x"), 0.000001f);
+    }
+
+    public void testJavaVersionAsInt() {
+        assertEquals(0, SystemUtils.toJavaVersionInt(null));
+        assertEquals(0, SystemUtils.toJavaVersionInt(""));
+        assertEquals(0, SystemUtils.toJavaVersionInt("0"));
+        assertEquals(110, SystemUtils.toJavaVersionInt("1.1"));
+        assertEquals(120, SystemUtils.toJavaVersionInt("1.2"));
+        assertEquals(130, SystemUtils.toJavaVersionInt("1.3.0"));
+        assertEquals(131, SystemUtils.toJavaVersionInt("1.3.1"));
+        assertEquals(140, SystemUtils.toJavaVersionInt("1.4.0"));
+        assertEquals(141, SystemUtils.toJavaVersionInt("1.4.1"));
+        assertEquals(142, SystemUtils.toJavaVersionInt("1.4.2"));
+        assertEquals(150, SystemUtils.toJavaVersionInt("1.5.0"));
+        assertEquals(160, SystemUtils.toJavaVersionInt("1.6.0"));
+        assertEquals(131, SystemUtils.toJavaVersionInt("JavaVM-1.3.1"));
+        assertEquals(131, SystemUtils.toJavaVersionInt("1.3.1 subset"));
+        // This used to return 0f in [lang] version 2.5:
+        assertEquals(130, SystemUtils.toJavaVersionInt("XXX-1.3.x"));
+    }
+
+    public void testJavaVersionAtLeastFloat() {
+        float version = SystemUtils.JAVA_VERSION_FLOAT;
+        assertEquals(true, SystemUtils.isJavaVersionAtLeast(version));
+        version -= 0.1f;
+        assertEquals(true, SystemUtils.isJavaVersionAtLeast(version));
+        version += 0.2f;
+        assertEquals(false, SystemUtils.isJavaVersionAtLeast(version));
+    }
+
+    public void testJavaVersionAtLeastInt() {
+        int version = SystemUtils.JAVA_VERSION_INT;
+        assertEquals(true, SystemUtils.isJavaVersionAtLeast(version));
+        version -= 10;
+        assertEquals(true, SystemUtils.isJavaVersionAtLeast(version));
+        version += 20;
+        assertEquals(false, SystemUtils.isJavaVersionAtLeast(version));
     }
 
     public void testJavaVersionMatches() {
@@ -344,7 +403,7 @@ public class SystemUtilsTest extends TestCase {
     }
 
     public void testJavaAwtHeadless() {
-        boolean atLeastJava14 = SystemUtils.isJavaVersionAtLeast(JAVA_1_4);
+        boolean atLeastJava14 = SystemUtils.isJavaVersionAtLeast(140);
         String expectedStringValue = System.getProperty("java.awt.headless");
         String expectedStringValueWithDefault = System.getProperty("java.awt.headless", "false");
         assertNotNull(expectedStringValueWithDefault);

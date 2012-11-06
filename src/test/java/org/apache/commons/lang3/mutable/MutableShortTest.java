@@ -21,7 +21,7 @@ import junit.framework.TestCase;
 /**
  * JUnit tests.
  * 
- * @version $Id: MutableShortTest.java 892118 2009-12-18 03:39:13Z sebb $
+ * @version $Id: MutableShortTest.java 1067685 2011-02-06 15:38:57Z niallp $
  * @see MutableShort
  */
 public class MutableShortTest extends TestCase {
@@ -67,6 +67,10 @@ public class MutableShortTest extends TestCase {
             mutNum.setValue(null);
             fail();
         } catch (NullPointerException ex) {}
+        try {
+            mutNum.setValue("0");
+            fail();
+        } catch (ClassCastException ex) {}
     }
 
     public void testEquals() {
@@ -107,6 +111,14 @@ public class MutableShortTest extends TestCase {
             mutNum.compareTo(null);
             fail();
         } catch (NullPointerException ex) {}
+        try {
+            mutNum.compareTo(new Short((short) 0));
+            fail();
+        } catch (ClassCastException ex) {}
+        try {
+            mutNum.compareTo("0");
+            fail();
+        } catch (ClassCastException ex) {}
     }
 
     public void testPrimitiveValues() {

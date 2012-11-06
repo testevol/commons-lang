@@ -5,9 +5,9 @@
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,13 +32,12 @@ import org.apache.commons.lang3.Validate;
  * Extends <code>java.text.MessageFormat</code> to allow pluggable/additional formatting
  * options for embedded format elements.  Client code should specify a registry
  * of <code>FormatFactory</code> instances associated with <code>String</code>
- * format names.  This registry will be consulted when the format elements are
+ * format names.  This registry will be consulted when the format elements are 
  * parsed from the message pattern.  In this way custom patterns can be specified,
  * and the formats supported by <code>java.text.MessageFormat</code> can be overridden
  * at the format and/or format style level (see MessageFormat).  A "format element"
  * embedded in the message pattern is specified (<b>()?</b> signifies optionality):<br />
- * <code>{</code><i>argument-number</i><b>(</b><code>,</code><i>format-name</i><b>
- * (</b><code>,</code><i>format-style</i><b>)?)?</b><code>}</code>
+ * <code>{</code><i>argument-number</i><b>(</b><code>,</code><i>format-name</i><b>(</b><code>,</code><i>format-style</i><b>)?)?</b><code>}</code>
  *
  * <p>
  * <i>format-name</i> and <i>format-style</i> values are trimmed of surrounding whitespace
@@ -49,12 +48,12 @@ import org.apache.commons.lang3.Validate;
  * found is used for this format element.
  * </p>
  *
- * <p><b>NOTICE:</b> The various subformat mutator methods are considered unnecessary; they exist on the parent
+ * <p><b>NOTICE:</b>: The various subformat mutator methods are considered unnecessary; they exist on the parent
  * class to allow the type of customization which it is the job of this class to provide in
  * a configurable fashion.  These methods have thus been disabled and will throw
  * <code>UnsupportedOperationException</code> if called.
  * </p>
- *
+ * 
  * <p>Limitations inherited from <code>java.text.MessageFormat</code>:
  * <ul>
  * <li>When using "choice" subformats, support for nested formatting instructions is limited
@@ -63,9 +62,11 @@ import org.apache.commons.lang3.Validate;
  *     <code>ExtendedMessageFormat</code>, is not guaranteed.</li>
  * </ul>
  * </p>
- *
+ * 
+ * @author Apache Software Foundation
+ * @author Matt Benson
  * @since 2.4
- * @version $Id: ExtendedMessageFormat.java 1144929 2011-07-10 18:26:16Z ggregory $
+ * @version $Id: ExtendedMessageFormat.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class ExtendedMessageFormat extends MessageFormat {
     private static final long serialVersionUID = -2362048321261811743L;
@@ -79,11 +80,11 @@ public class ExtendedMessageFormat extends MessageFormat {
     private static final char QUOTE = '\'';
 
     private String toPattern;
-    private final Map<String, ? extends FormatFactory> registry;
+    private final Map registry;
 
     /**
      * Create a new ExtendedMessageFormat for the default locale.
-     *
+     * 
      * @param pattern  the pattern to use, not null
      * @throws IllegalArgumentException in case of a bad pattern.
      */
@@ -93,7 +94,7 @@ public class ExtendedMessageFormat extends MessageFormat {
 
     /**
      * Create a new ExtendedMessageFormat.
-     *
+     * 
      * @param pattern  the pattern to use, not null
      * @param locale  the locale to use, not null
      * @throws IllegalArgumentException in case of a bad pattern.
@@ -104,24 +105,24 @@ public class ExtendedMessageFormat extends MessageFormat {
 
     /**
      * Create a new ExtendedMessageFormat for the default locale.
-     *
+     * 
      * @param pattern  the pattern to use, not null
      * @param registry  the registry of format factories, may be null
      * @throws IllegalArgumentException in case of a bad pattern.
      */
-    public ExtendedMessageFormat(String pattern, Map<String, ? extends FormatFactory> registry) {
+    public ExtendedMessageFormat(String pattern, Map registry) {
         this(pattern, Locale.getDefault(), registry);
     }
 
     /**
      * Create a new ExtendedMessageFormat.
-     *
+     * 
      * @param pattern  the pattern to use, not null
      * @param locale  the locale to use, not null
      * @param registry  the registry of format factories, may be null
      * @throws IllegalArgumentException in case of a bad pattern.
      */
-    public ExtendedMessageFormat(String pattern, Locale locale, Map<String, ? extends FormatFactory> registry) {
+    public ExtendedMessageFormat(String pattern, Locale locale, Map registry) {
         super(DUMMY_PATTERN);
         setLocale(locale);
         this.registry = registry;
@@ -131,26 +132,24 @@ public class ExtendedMessageFormat extends MessageFormat {
     /**
      * {@inheritDoc}
      */
-    @Override
     public String toPattern() {
         return toPattern;
     }
 
     /**
      * Apply the specified pattern.
-     *
+     * 
      * @param pattern String
      */
-    @Override
     public final void applyPattern(String pattern) {
         if (registry == null) {
             super.applyPattern(pattern);
             toPattern = super.toPattern();
             return;
         }
-        ArrayList<Format> foundFormats = new ArrayList<Format>();
-        ArrayList<String> foundDescriptions = new ArrayList<String>();
-        StringBuilder stripCustom = new StringBuilder(pattern.length());
+        ArrayList foundFormats = new ArrayList();
+        ArrayList foundDescriptions = new ArrayList();
+        StrBuilder stripCustom = new StrBuilder(pattern.length());
 
         ParsePosition pos = new ParsePosition(0);
         char[] c = pattern.toCharArray();
@@ -195,11 +194,11 @@ public class ExtendedMessageFormat extends MessageFormat {
         toPattern = insertFormats(super.toPattern(), foundDescriptions);
         if (containsElements(foundFormats)) {
             Format[] origFormats = getFormats();
-            // only loop over what we know we have, as MessageFormat on Java 1.3
+            // only loop over what we know we have, as MessageFormat on Java 1.3 
             // seems to provide an extra format element:
             int i = 0;
-            for (Iterator<Format> it = foundFormats.iterator(); it.hasNext(); i++) {
-                Format f = it.next();
+            for (Iterator it = foundFormats.iterator(); it.hasNext(); i++) {
+                Format f = (Format) it.next();
                 if (f != null) {
                     origFormats[i] = f;
                 }
@@ -210,46 +209,42 @@ public class ExtendedMessageFormat extends MessageFormat {
 
     /**
      * Throws UnsupportedOperationException - see class Javadoc for details.
-     *
+     * 
      * @param formatElementIndex format element index
      * @param newFormat the new format
      * @throws UnsupportedOperationException
      */
-    @Override
     public void setFormat(int formatElementIndex, Format newFormat) {
         throw new UnsupportedOperationException();
     }
 
     /**
      * Throws UnsupportedOperationException - see class Javadoc for details.
-     *
+     * 
      * @param argumentIndex argument index
      * @param newFormat the new format
      * @throws UnsupportedOperationException
      */
-    @Override
     public void setFormatByArgumentIndex(int argumentIndex, Format newFormat) {
         throw new UnsupportedOperationException();
     }
 
     /**
      * Throws UnsupportedOperationException - see class Javadoc for details.
-     *
+     * 
      * @param newFormats new formats
      * @throws UnsupportedOperationException
      */
-    @Override
     public void setFormats(Format[] newFormats) {
         throw new UnsupportedOperationException();
     }
 
     /**
      * Throws UnsupportedOperationException - see class Javadoc for details.
-     *
+     * 
      * @param newFormats new formats
      * @throws UnsupportedOperationException
      */
-    @Override
     public void setFormatsByArgumentIndex(Format[] newFormats) {
         throw new UnsupportedOperationException();
     }
@@ -259,8 +254,8 @@ public class ExtendedMessageFormat extends MessageFormat {
      *
      * @param obj the object to compare to
      * @return true if this object equals the other, otherwise false
+     * @since 2.6
      */
-    @Override
     public boolean equals(Object obj) {
         if (obj == this) {
             return true;
@@ -288,8 +283,8 @@ public class ExtendedMessageFormat extends MessageFormat {
      * Return the hashcode.
      *
      * @return the hashcode
+     * @since 2.6
      */
-    @Override
     public int hashCode() {
         int result = super.hashCode();
         result = HASH_SEED * result + ObjectUtils.hashCode(registry);
@@ -299,7 +294,7 @@ public class ExtendedMessageFormat extends MessageFormat {
 
     /**
      * Get a custom format from a format description.
-     *
+     * 
      * @param desc String
      * @return Format
      */
@@ -312,7 +307,7 @@ public class ExtendedMessageFormat extends MessageFormat {
                 name = desc.substring(0, i).trim();
                 args = desc.substring(i + 1).trim();
             }
-            FormatFactory factory = registry.get(name);
+            FormatFactory factory = (FormatFactory) registry.get(name);
             if (factory != null) {
                 return factory.getFormat(name, args, getLocale());
             }
@@ -322,7 +317,7 @@ public class ExtendedMessageFormat extends MessageFormat {
 
     /**
      * Read the argument index from the current format element
-     *
+     * 
      * @param pattern pattern to parse
      * @param pos current parse position
      * @return argument index
@@ -330,7 +325,7 @@ public class ExtendedMessageFormat extends MessageFormat {
     private int readArgumentIndex(String pattern, ParsePosition pos) {
         int start = pos.getIndex();
         seekNonWs(pattern, pos);
-        StringBuffer result = new StringBuffer();
+        StrBuilder result = new StrBuilder();
         boolean error = false;
         for (; !error && pos.getIndex() < pattern.length(); next(pos)) {
             char c = pattern.charAt(pos.getIndex());
@@ -345,7 +340,7 @@ public class ExtendedMessageFormat extends MessageFormat {
             if ((c == START_FMT || c == END_FE) && result.length() > 0) {
                 try {
                     return Integer.parseInt(result.toString());
-                } catch (NumberFormatException e) { // NOPMD
+                } catch (NumberFormatException e) {
                     // we've already ensured only digits, so unless something
                     // outlandishly large was specified we should be okay.
                 }
@@ -364,7 +359,7 @@ public class ExtendedMessageFormat extends MessageFormat {
 
     /**
      * Parse the format component of a format element.
-     *
+     * 
      * @param pattern string to parse
      * @param pos current parse position
      * @return Format description String
@@ -401,11 +396,11 @@ public class ExtendedMessageFormat extends MessageFormat {
      * @param customPatterns The custom patterns to re-insert, if any
      * @return full pattern
      */
-    private String insertFormats(String pattern, ArrayList<String> customPatterns) {
+    private String insertFormats(String pattern, ArrayList customPatterns) {
         if (!containsElements(customPatterns)) {
             return pattern;
         }
-        StringBuilder sb = new StringBuilder(pattern.length() * 2);
+        StrBuilder sb = new StrBuilder(pattern.length() * 2);
         ParsePosition pos = new ParsePosition(0);
         int fe = -1;
         int depth = 0;
@@ -421,7 +416,7 @@ public class ExtendedMessageFormat extends MessageFormat {
                     fe++;
                     sb.append(START_FE).append(
                             readArgumentIndex(pattern, next(pos)));
-                    String customPattern = customPatterns.get(fe);
+                    String customPattern = (String) customPatterns.get(fe);
                     if (customPattern != null) {
                         sb.append(START_FMT).append(customPattern);
                     }
@@ -440,7 +435,7 @@ public class ExtendedMessageFormat extends MessageFormat {
 
     /**
      * Consume whitespace from the current parse position.
-     *
+     * 
      * @param pattern String to read
      * @param pos current position
      */
@@ -455,7 +450,7 @@ public class ExtendedMessageFormat extends MessageFormat {
 
     /**
      * Convenience method to advance parse position by 1
-     *
+     * 
      * @param pos ParsePosition
      * @return <code>pos</code>
      */
@@ -467,15 +462,15 @@ public class ExtendedMessageFormat extends MessageFormat {
     /**
      * Consume a quoted string, adding it to <code>appendTo</code> if
      * specified.
-     *
+     * 
      * @param pattern pattern to parse
      * @param pos current parse position
      * @param appendTo optional StringBuffer to append
      * @param escapingOn whether to process escaped quotes
      * @return <code>appendTo</code>
      */
-    private StringBuilder appendQuotedString(String pattern, ParsePosition pos,
-            StringBuilder appendTo, boolean escapingOn) {
+    private StrBuilder appendQuotedString(String pattern, ParsePosition pos,
+            StrBuilder appendTo, boolean escapingOn) {
         int start = pos.getIndex();
         char[] c = pattern.toCharArray();
         if (escapingOn && c[start] == QUOTE) {
@@ -506,7 +501,7 @@ public class ExtendedMessageFormat extends MessageFormat {
 
     /**
      * Consume quoted string only
-     *
+     * 
      * @param pattern pattern to parse
      * @param pos current parse position
      * @param escapingOn whether to process escaped quotes
@@ -521,12 +516,12 @@ public class ExtendedMessageFormat extends MessageFormat {
      * @param coll to check
      * @return <code>true</code> if some Object was found, <code>false</code> otherwise.
      */
-    private boolean containsElements(Collection<?> coll) {
+    private boolean containsElements(Collection coll) {
         if (coll == null || coll.size() == 0) {
             return false;
         }
-        for (Object name : coll) {
-            if (name != null) {
+        for (Iterator iter = coll.iterator(); iter.hasNext();) {
+            if (iter.next() != null) {
                 return true;
             }
         }

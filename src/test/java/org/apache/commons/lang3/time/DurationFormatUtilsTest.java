@@ -27,6 +27,11 @@ import junit.framework.TestCase;
 /**
  * TestCase for DurationFormatUtils.
  * 
+ * @author Apache Software Foundation
+ * @author Apache Ant - DateUtilsTest
+ * @author <a href="mailto:sbailliez@apache.org">Stephane Bailliez</a>
+ * @author <a href="mailto:stefan.bodewig@epost.de">Stefan Bodewig</a>
+ * @author <a href="mailto:ggregory@seagullsw.com">Gary Gregory</a>
  */
 public class DurationFormatUtilsTest extends TestCase {
 
@@ -37,7 +42,7 @@ public class DurationFormatUtilsTest extends TestCase {
     // -----------------------------------------------------------------------
     public void testConstructor() {
         assertNotNull(new DurationFormatUtils());
-        Constructor<?>[] cons = DurationFormatUtils.class.getDeclaredConstructors();
+        Constructor[] cons = DurationFormatUtils.class.getDeclaredConstructors();
         assertEquals(1, cons.length);
         assertEquals(true, Modifier.isPublic(cons[0].getModifiers()));
         assertEquals(true, Modifier.isPublic(DurationFormatUtils.class.getModifiers()));
@@ -102,7 +107,7 @@ public class DurationFormatUtilsTest extends TestCase {
         text = DurationFormatUtils.formatDurationWords(2 * 24 * 60 * 60 * 1000 + 72 * 60 * 1000, false, false);
         assertEquals("2 days 1 hour 12 minutes 0 seconds", text);
         for (int i = 2; i < 31; i++) {
-            text = DurationFormatUtils.formatDurationWords(i * 24 * 60 * 60 * 1000L, false, false);
+            text = DurationFormatUtils.formatDurationWords(i * 24 * 60 * 60 * 1000, false, false);
             // assertEquals(i + " days 0 hours 0 minutes 0 seconds", text);
             //            
             // junit.framework.ComparisonFailure: expected:<25 days 0 hours 0 minutes 0...> but was:<-24 days -17 hours
@@ -210,7 +215,7 @@ public class DurationFormatUtilsTest extends TestCase {
         assertEquals("P0Y0M0DT0H0M0.100S", DurationFormatUtils.formatDurationISO(100L));
         assertEquals("P0Y0M0DT0H1M15.321S", DurationFormatUtils.formatDurationISO(75321L));
     }
-/*
+    /*
     public void testFormatDuration() {
         long duration = 0;
         assertEquals("0", DurationFormatUtils.formatDuration(duration, "y"));
@@ -246,8 +251,8 @@ public class DurationFormatUtilsTest extends TestCase {
         // remember that duration formatting ignores time zones, working on strict hour lengths
         int days = 366 + 365 + 365 + 31;
         assertEquals("0 0 " + days, DurationFormatUtils.formatDuration(duration, "y M d"));
-    }
-*/
+    }*/
+
     public void testFormatPeriodISO() {
         TimeZone timeZone = TimeZone.getTimeZone("GMT-3");
         Calendar base = Calendar.getInstance(timeZone);
@@ -508,7 +513,7 @@ public class DurationFormatUtilsTest extends TestCase {
         //bruteForce(1996, 1, 29, "M", Calendar.MONTH);  // this will fail
     }
     
-    private static final int FOUR_YEARS = 365 * 3 + 366;
+    private int FOUR_YEARS = 365 * 3 + 366;
     
     // Takes a minute to run, so generally turned off
 //    public void testBrutally() {

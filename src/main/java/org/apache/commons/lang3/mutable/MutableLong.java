@@ -21,9 +21,10 @@ package org.apache.commons.lang3.mutable;
  * 
  * @see Long
  * @since 2.1
- * @version $Id: MutableLong.java 1096472 2011-04-25 13:28:06Z mbenson $
+ * @author Apache Software Foundation
+ * @version $Id: MutableLong.java 1067685 2011-02-06 15:38:57Z niallp $
  */
-public class MutableLong extends Number implements Comparable<MutableLong>, Mutable<Number> {
+public class MutableLong extends Number implements Comparable, Mutable {
 
     /**
      * Required for serialization support.
@@ -81,7 +82,7 @@ public class MutableLong extends Number implements Comparable<MutableLong>, Muta
      * 
      * @return the value as a Long, never null
      */
-    public Long getValue() {
+    public Object getValue() {
         return new Long(this.value);
     }
 
@@ -99,9 +100,10 @@ public class MutableLong extends Number implements Comparable<MutableLong>, Muta
      * 
      * @param value  the value to set, not null
      * @throws NullPointerException if the object is null
+     * @throws ClassCastException if the type is not a {@link Number}
      */
-    public void setValue(Number value) {
-        this.value = value.longValue();
+    public void setValue(Object value) {
+        setValue(((Number) value).longValue());
     }
 
     //-----------------------------------------------------------------------
@@ -167,13 +169,12 @@ public class MutableLong extends Number implements Comparable<MutableLong>, Muta
     }
 
     //-----------------------------------------------------------------------
-    // shortValue and byteValue rely on Number implementation
+    // shortValue and bytValue rely on Number implementation
     /**
      * Returns the value of this MutableLong as an int.
      *
      * @return the numeric value represented by this object after conversion to type int.
      */
-    @Override
     public int intValue() {
         return (int) value;
     }
@@ -183,7 +184,6 @@ public class MutableLong extends Number implements Comparable<MutableLong>, Muta
      *
      * @return the numeric value represented by this object after conversion to type long.
      */
-    @Override
     public long longValue() {
         return value;
     }
@@ -193,7 +193,6 @@ public class MutableLong extends Number implements Comparable<MutableLong>, Muta
      *
      * @return the numeric value represented by this object after conversion to type float.
      */
-    @Override
     public float floatValue() {
         return value;
     }
@@ -203,7 +202,6 @@ public class MutableLong extends Number implements Comparable<MutableLong>, Muta
      *
      * @return the numeric value represented by this object after conversion to type double.
      */
-    @Override
     public double doubleValue() {
         return value;
     }
@@ -215,7 +213,7 @@ public class MutableLong extends Number implements Comparable<MutableLong>, Muta
      * @return a Long instance containing the value from this mutable, never null
      */
     public Long toLong() {
-        return Long.valueOf(longValue());
+        return new Long(longValue());
     }
 
     //-----------------------------------------------------------------------
@@ -227,7 +225,6 @@ public class MutableLong extends Number implements Comparable<MutableLong>, Muta
      * @param obj  the object to compare with, null returns false
      * @return <code>true</code> if the objects are the same; <code>false</code> otherwise.
      */
-    @Override
     public boolean equals(Object obj) {
         if (obj instanceof MutableLong) {
             return value == ((MutableLong) obj).longValue();
@@ -240,7 +237,6 @@ public class MutableLong extends Number implements Comparable<MutableLong>, Muta
      * 
      * @return a suitable hash code
      */
-    @Override
     public int hashCode() {
         return (int) (value ^ (value >>> 32));
     }
@@ -249,10 +245,12 @@ public class MutableLong extends Number implements Comparable<MutableLong>, Muta
     /**
      * Compares this mutable to another in ascending order.
      * 
-     * @param other  the other mutable to compare to, not null
+     * @param obj the other mutable to compare to, not null
      * @return negative if this is less, zero if equal, positive if greater
+     * @throws ClassCastException if the argument is not a MutableLong
      */
-    public int compareTo(MutableLong other) {
+    public int compareTo(Object obj) {
+        MutableLong other = (MutableLong) obj;
         long anotherVal = other.value;
         return value < anotherVal ? -1 : (value == anotherVal ? 0 : 1);
     }
@@ -263,7 +261,6 @@ public class MutableLong extends Number implements Comparable<MutableLong>, Muta
      * 
      * @return the mutable value as a string
      */
-    @Override
     public String toString() {
         return String.valueOf(value);
     }

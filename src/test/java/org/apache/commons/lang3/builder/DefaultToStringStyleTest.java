@@ -19,14 +19,15 @@ package org.apache.commons.lang3.builder;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.lang3.builder.ToStringStyleTest.Person;
+
+import junit.framework.TestCase;
 
 /**
  * Unit tests {@link org.apache.commons.lang3.builder.DefaultToStringStyleTest}.
  *
- * @version $Id: DefaultToStringStyleTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @version $Id: DefaultToStringStyleTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class DefaultToStringStyleTest extends TestCase {
 
@@ -37,13 +38,12 @@ public class DefaultToStringStyleTest extends TestCase {
         super(name);
     }
 
-    @Override
+
     protected void setUp() throws Exception {
         super.setUp();
         ToStringBuilder.setDefaultStyle(ToStringStyle.DEFAULT_STYLE);
     }
 
-    @Override
     protected void tearDown() throws Exception {
         super.tearDown();
         ToStringBuilder.setDefaultStyle(ToStringStyle.DEFAULT_STYLE);
@@ -73,10 +73,10 @@ public class DefaultToStringStyleTest extends TestCase {
         assertEquals(baseStr + "[a=3]", new ToStringBuilder(base).append("a", i3).toString());
         assertEquals(baseStr + "[a=3,b=4]", new ToStringBuilder(base).append("a", i3).append("b", i4).toString());
         assertEquals(baseStr + "[a=<Integer>]", new ToStringBuilder(base).append("a", i3, false).toString());
-        assertEquals(baseStr + "[a=<size=0>]", new ToStringBuilder(base).append("a", new ArrayList<Object>(), false).toString());
-        assertEquals(baseStr + "[a=[]]", new ToStringBuilder(base).append("a", new ArrayList<Object>(), true).toString());
-        assertEquals(baseStr + "[a=<size=0>]", new ToStringBuilder(base).append("a", new HashMap<Object, Object>(), false).toString());
-        assertEquals(baseStr + "[a={}]", new ToStringBuilder(base).append("a", new HashMap<Object, Object>(), true).toString());
+        assertEquals(baseStr + "[a=<size=0>]", new ToStringBuilder(base).append("a", new ArrayList(), false).toString());
+        assertEquals(baseStr + "[a=[]]", new ToStringBuilder(base).append("a", new ArrayList(), true).toString());
+        assertEquals(baseStr + "[a=<size=0>]", new ToStringBuilder(base).append("a", new HashMap(), false).toString());
+        assertEquals(baseStr + "[a={}]", new ToStringBuilder(base).append("a", new HashMap(), true).toString());
         assertEquals(baseStr + "[a=<size=0>]", new ToStringBuilder(base).append("a", (Object) new String[0], false).toString());
         assertEquals(baseStr + "[a={}]", new ToStringBuilder(base).append("a", (Object) new String[0], true).toString());
     }

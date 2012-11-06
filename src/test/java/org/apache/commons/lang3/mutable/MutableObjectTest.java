@@ -21,7 +21,7 @@ import junit.framework.TestCase;
 /**
  * JUnit tests.
  * 
- * @version $Id: MutableObjectTest.java 892118 2009-12-18 03:39:13Z sebb $
+ * @version $Id: MutableObjectTest.java 1067685 2011-02-06 15:38:57Z niallp $
  * @see MutableShort
  */
 public class MutableObjectTest extends TestCase {
@@ -32,17 +32,17 @@ public class MutableObjectTest extends TestCase {
 
     // ----------------------------------------------------------------
     public void testConstructors() {
-        assertEquals(null, new MutableObject<String>().getValue());
+        assertEquals(null, new MutableObject().getValue());
         
         Integer i = new Integer(6);
-        assertSame(i, new MutableObject<Integer>(i).getValue());
-        assertSame("HI", new MutableObject<String>("HI").getValue());
-        assertSame(null, new MutableObject<Object>(null).getValue());
+        assertSame(i, new MutableObject(i).getValue());
+        assertSame("HI", new MutableObject("HI").getValue());
+        assertSame(null, new MutableObject(null).getValue());
     }
 
     public void testGetSet() {
-        final MutableObject<String> mutNum = new MutableObject<String>();
-        assertEquals(null, new MutableObject<Object>().getValue());
+        final MutableObject mutNum = new MutableObject();
+        assertEquals(null, new MutableObject().getValue());
         
         mutNum.setValue("HELLO");
         assertSame("HELLO", mutNum.getValue());
@@ -52,10 +52,10 @@ public class MutableObjectTest extends TestCase {
     }
 
     public void testEquals() {
-        final MutableObject<String> mutNumA = new MutableObject<String>("ALPHA");
-        final MutableObject<String> mutNumB = new MutableObject<String>("ALPHA");
-        final MutableObject<String> mutNumC = new MutableObject<String>("BETA");
-        final MutableObject<String> mutNumD = new MutableObject<String>(null);
+        final MutableObject mutNumA = new MutableObject("ALPHA");
+        final MutableObject mutNumB = new MutableObject("ALPHA");
+        final MutableObject mutNumC = new MutableObject("BETA");
+        final MutableObject mutNumD = new MutableObject(null);
 
         assertEquals(true, mutNumA.equals(mutNumA));
         assertEquals(true, mutNumA.equals(mutNumB));
@@ -73,10 +73,10 @@ public class MutableObjectTest extends TestCase {
     }
 
     public void testHashCode() {
-        final MutableObject<String> mutNumA = new MutableObject<String>("ALPHA");
-        final MutableObject<String> mutNumB = new MutableObject<String>("ALPHA");
-        final MutableObject<String> mutNumC = new MutableObject<String>("BETA");
-        final MutableObject<String> mutNumD = new MutableObject<String>(null);
+        final MutableObject mutNumA = new MutableObject("ALPHA");
+        final MutableObject mutNumB = new MutableObject("ALPHA");
+        final MutableObject mutNumC = new MutableObject("BETA");
+        final MutableObject mutNumD = new MutableObject(null);
 
         assertEquals(true, mutNumA.hashCode() == mutNumA.hashCode());
         assertEquals(true, mutNumA.hashCode() == mutNumB.hashCode());
@@ -87,9 +87,9 @@ public class MutableObjectTest extends TestCase {
     }
 
     public void testToString() {
-        assertEquals("HI", new MutableObject<String>("HI").toString());
-        assertEquals("10.0", new MutableObject<Double>(new Double(10)).toString());
-        assertEquals("null", new MutableObject<Object>(null).toString());
+        assertEquals("HI", new MutableObject("HI").toString());
+        assertEquals("10.0", new MutableObject(new Double(10)).toString());
+        assertEquals("null", new MutableObject(null).toString());
     }
 
 }

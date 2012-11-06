@@ -16,12 +16,16 @@
  */
 package org.apache.commons.lang3;
 
+import org.apache.commons.lang3.StringUtils;
+
 import junit.framework.TestCase;
 
 /**
  * Unit tests {@link org.apache.commons.lang3.StringUtils} - Substring methods
  *
- * @version $Id: StringUtilsIsTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @author Michael Davey
+ * @version $Id: StringUtilsIsTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class StringUtilsIsTest extends TestCase {
 
@@ -33,7 +37,7 @@ public class StringUtilsIsTest extends TestCase {
 
     public void testIsAlpha() {
         assertEquals(false, StringUtils.isAlpha(null));
-        assertEquals(false, StringUtils.isAlpha(""));
+        assertEquals(true, StringUtils.isAlpha(""));
         assertEquals(false, StringUtils.isAlpha(" "));
         assertEquals(true, StringUtils.isAlpha("a"));
         assertEquals(true, StringUtils.isAlpha("A"));
@@ -47,7 +51,7 @@ public class StringUtilsIsTest extends TestCase {
 
     public void testIsAlphanumeric() {
         assertEquals(false, StringUtils.isAlphanumeric(null));
-        assertEquals(false, StringUtils.isAlphanumeric(""));
+        assertEquals(true, StringUtils.isAlphanumeric(""));
         assertEquals(false, StringUtils.isAlphanumeric(" "));
         assertEquals(true, StringUtils.isAlphanumeric("a"));
         assertEquals(true, StringUtils.isAlphanumeric("A"));
@@ -129,7 +133,7 @@ public class StringUtilsIsTest extends TestCase {
   
     public void testIsNumeric() {
         assertEquals(false, StringUtils.isNumeric(null));
-        assertEquals(false, StringUtils.isNumeric(""));
+        assertEquals(true, StringUtils.isNumeric(""));
         assertEquals(false, StringUtils.isNumeric(" "));
         assertEquals(false, StringUtils.isNumeric("a"));
         assertEquals(false, StringUtils.isNumeric("A"));

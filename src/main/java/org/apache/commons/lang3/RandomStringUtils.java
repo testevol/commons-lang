@@ -17,9 +17,8 @@
 package org.apache.commons.lang3;
 
 import java.util.Random;
-
 /**
- * <p>Operations for random {@code String}s.</p>
+ * <p>Operations for random <code>String</code>s.</p>
  * <p>Currently <em>private high surrogate</em> characters are ignored. 
  * These are unicode characters that fall between the values 56192 (db80)
  * and 56319 (dbff) as we don't know how to handle them. 
@@ -30,8 +29,12 @@ import java.util.Random;
  * chosen high surrogate. </p>
  *
  * <p>#ThreadSafe#</p>
+ * @author Apache Software Foundation
+ * @author <a href="mailto:steven@caswell.name">Steven Caswell</a>
+ * @author Gary Gregory
+ * @author Phil Steitz
  * @since 1.0
- * @version $Id: RandomStringUtils.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @version $Id: RandomStringUtils.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class RandomStringUtils {
 
@@ -43,9 +46,9 @@ public class RandomStringUtils {
     private static final Random RANDOM = new Random();
 
     /**
-     * <p>{@code RandomStringUtils} instances should NOT be constructed in
+     * <p><code>RandomStringUtils</code> instances should NOT be constructed in
      * standard programming. Instead, the class should be used as
-     * {@code RandomStringUtils.random(5);}.</p>
+     * <code>RandomStringUtils.random(5);</code>.</p>
      *
      * <p>This constructor is public to permit tools that require a JavaBean instance
      * to operate.</p>
@@ -74,7 +77,7 @@ public class RandomStringUtils {
      * specified.</p>
      *
      * <p>Characters will be chosen from the set of characters whose
-     * ASCII value is between {@code 32} and {@code 126} (inclusive).</p>
+     * ASCII value is between <code>32</code> and <code>126</code> (inclusive).</p>
      *
      * @param count  the length of random string to create
      * @return the random string
@@ -133,9 +136,9 @@ public class RandomStringUtils {
      * characters as indicated by the arguments.</p>
      *
      * @param count  the length of random string to create
-     * @param letters  if {@code true}, generated string will include
+     * @param letters  if <code>true</code>, generated string will include
      *  alphabetic characters
-     * @param numbers  if {@code true}, generated string will include
+     * @param numbers  if <code>true</code>, generated string will include
      *  numeric characters
      * @return the random string
      */
@@ -153,9 +156,9 @@ public class RandomStringUtils {
      * @param count  the length of random string to create
      * @param start  the position in set of chars to start at
      * @param end  the position in set of chars to end before
-     * @param letters  if {@code true}, generated string will include
+     * @param letters  if <code>true</code>, generated string will include
      *  alphabetic characters
-     * @param numbers  if {@code true}, generated string will include
+     * @param numbers  if <code>true</code>, generated string will include
      *  numeric characters
      * @return the random string
      */
@@ -178,12 +181,12 @@ public class RandomStringUtils {
      * @param letters  only allow letters?
      * @param numbers  only allow numbers?
      * @param chars  the set of chars to choose randoms from.
-     *  If {@code null}, then it will use the set of all chars.
+     *  If <code>null</code>, then it will use the set of all chars.
      * @return the random string
      * @throws ArrayIndexOutOfBoundsException if there are not
-     *  {@code (end - start) + 1} characters in the set array.
+     *  <code>(end - start) + 1</code> characters in the set array.
      */
-    public static String random(int count, int start, int end, boolean letters, boolean numbers, char... chars) {
+    public static String random(int count, int start, int end, boolean letters, boolean numbers, char[] chars) {
         return random(count, start, end, letters, numbers, chars, RANDOM);
     }
 
@@ -191,13 +194,13 @@ public class RandomStringUtils {
      * <p>Creates a random string based on a variety of options, using
      * supplied source of randomness.</p>
      *
-     * <p>If start and end are both {@code 0}, start and end are set
-     * to {@code ' '} and {@code 'z'}, the ASCII printable
+     * <p>If start and end are both <code>0</code>, start and end are set
+     * to <code>' '</code> and <code>'z'</code>, the ASCII printable
      * characters, will be used, unless letters and numbers are both
-     * {@code false}, in which case, start and end are set to
-     * {@code 0} and {@code Integer.MAX_VALUE}.
+     * <code>false</code>, in which case, start and end are set to
+     * <code>0</code> and <code>Integer.MAX_VALUE</code>.
      *
-     * <p>If set is not {@code null}, characters between start and
+     * <p>If set is not <code>null</code>, characters between start and
      * end are chosen.</p>
      *
      * <p>This method accepts a user-supplied {@link Random}
@@ -212,12 +215,12 @@ public class RandomStringUtils {
      * @param letters  only allow letters?
      * @param numbers  only allow numbers?
      * @param chars  the set of chars to choose randoms from.
-     *  If {@code null}, then it will use the set of all chars.
+     *  If <code>null</code>, then it will use the set of all chars.
      * @param random  a source of randomness.
      * @return the random string
      * @throws ArrayIndexOutOfBoundsException if there are not
-     *  {@code (end - start) + 1} characters in the set array.
-     * @throws IllegalArgumentException if {@code count} &lt; 0.
+     *  <code>(end - start) + 1</code> characters in the set array.
+     * @throws IllegalArgumentException if <code>count</code> &lt; 0.
      * @since 2.0
      */
     public static String random(int count, int start, int end, boolean letters, boolean numbers,
@@ -247,8 +250,9 @@ public class RandomStringUtils {
                 ch = chars[random.nextInt(gap) + start];
             }
             if ((letters && Character.isLetter(ch))
-                    || (numbers && Character.isDigit(ch))
-                    || (!letters && !numbers)) {
+                || (numbers && Character.isDigit(ch))
+                || (!letters && !numbers)) 
+            {
                 if(ch >= 56320 && ch <= 57343) {
                     if(count == 0) {
                         count++;
@@ -291,7 +295,7 @@ public class RandomStringUtils {
      * @param chars  the String containing the set of characters to use,
      *  may be null
      * @return the random string
-     * @throws IllegalArgumentException if {@code count} &lt; 0.
+     * @throws IllegalArgumentException if <code>count</code> &lt; 0.
      */
     public static String random(int count, String chars) {
         if (chars == null) {
@@ -310,9 +314,9 @@ public class RandomStringUtils {
      * @param chars  the character array containing the set of characters to use,
      *  may be null
      * @return the random string
-     * @throws IllegalArgumentException if {@code count} &lt; 0.
+     * @throws IllegalArgumentException if <code>count</code> &lt; 0.
      */
-    public static String random(int count, char... chars) {
+    public static String random(int count, char[] chars) {
         if (chars == null) {
             return random(count, 0, 0, false, false, null, RANDOM);
         }

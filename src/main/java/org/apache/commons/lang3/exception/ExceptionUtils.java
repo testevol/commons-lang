@@ -19,14 +19,18 @@ package org.apache.commons.lang3.exception;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.NullArgumentException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
@@ -34,8 +38,13 @@ import org.apache.commons.lang3.SystemUtils;
  * <p>Provides utilities for manipulating and examining 
  * <code>Throwable</code> objects.</p>
  *
+ * @author Apache Software Foundation
+ * @author Daniel L. Rall
+ * @author Dmitri Plotnikov
+ * @author <a href="mailto:ggregory@seagullsw.com">Gary Gregory</a>
+ * @author Pete Gieser
  * @since 1.0
- * @version $Id: ExceptionUtils.java 1144929 2011-07-10 18:26:16Z ggregory $
+ * @version $Id: ExceptionUtils.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class ExceptionUtils {
     
@@ -47,11 +56,13 @@ public class ExceptionUtils {
      */
     static final String WRAPPED_MARKER = " [wrapped] ";
 
+    // Lock object for CAUSE_METHOD_NAMES
+    private static final Object CAUSE_METHOD_NAMES_LOCK = new Object();
+    
     /**
      * <p>The names of methods commonly used to access a wrapped exception.</p>
      */
-    // TODO: Remove in Lang 4.0
-    private static final String[] CAUSE_METHOD_NAMES = {
+    private static String[] CAUSE_METHOD_NAMES = {
         "getCause",
         "getNextException",
         "getTargetException",
@@ -67,6 +78,32 @@ public class ExceptionUtils {
     };
 
     /**
+     * <p>The Method object for Java 1.4 getCause.</p>
+     */
+    private static final Method THROWABLE_CAUSE_METHOD;
+
+    /**
+     * <p>The Method object for Java 1.4 initCause.</p>
+     */
+    private static final Method THROWABLE_INITCAUSE_METHOD;
+    
+    static {
+        Method causeMethod;
+        try {
+            causeMethod = Throwable.class.getMethod("getCause", null);
+        } catch (Exception e) {
+            causeMethod = null;
+        }
+        THROWABLE_CAUSE_METHOD = causeMethod;
+        try {
+            causeMethod = Throwable.class.getMethod("initCause", new Class[]{Throwable.class});
+        } catch (Exception e) {
+            causeMethod = null;
+        }
+        THROWABLE_INITCAUSE_METHOD = causeMethod;
+    }
+    
+    /**
      * <p>
      * Public constructor allows an instance of <code>ExceptionUtils</code> to be created, although that is not
      * normally necessary.
@@ -78,17 +115,134 @@ public class ExceptionUtils {
 
     //-----------------------------------------------------------------------
     /**
-     * <p>Returns the default names used when searching for the cause of an exception.</p>
-     *
-     * <p>This may be modified and used in the overloaded getCause(Throwable, String[]) method.</p>
-     *
-     * @return cloned array of the default method names
-     * @since 3.0
-     * @deprecated This feature will be removed in Lang 4.0
+     * <p>Adds to the list of method names used in the search for <code>Throwable</code>
+     * objects.</p>
+     * 
+     * @param methodName  the methodName to add to the list, <code>null</code>
+     *  and empty strings are ignored
+     * @since 2.0
      */
-    @Deprecated
-    public static String[] getDefaultCauseMethodNames() {
-        return ArrayUtils.clone(CAUSE_METHOD_NAMES);
+    public static void addCauseMethodName(String methodName) {
+        if (StringUtils.isNotEmpty(methodName) && !isCauseMethodName(methodName)) {            
+            List list = getCauseMethodNameList();
+            if (list.add(methodName)) {
+                synchronized(CAUSE_METHOD_NAMES_LOCK) {
+                    CAUSE_METHOD_NAMES = toArray(list);
+                }
+            }
+        }
+    }
+
+    /**
+     * <p>Removes from the list of method names used in the search for <code>Throwable</code>
+     * objects.</p>
+     * 
+     * @param methodName  the methodName to remove from the list, <code>null</code>
+     *  and empty strings are ignored
+     * @since 2.1
+     */
+    public static void removeCauseMethodName(String methodName) {
+        if (StringUtils.isNotEmpty(methodName)) {
+            List list = getCauseMethodNameList();
+            if (list.remove(methodName)) {
+                synchronized(CAUSE_METHOD_NAMES_LOCK) {
+                    CAUSE_METHOD_NAMES = toArray(list);
+                }
+            }
+        }
+    }
+
+    /**
+     * <p>Sets the cause of a <code>Throwable</code> using introspection, allowing
+     * source code compatibility between pre-1.4 and post-1.4 Java releases.</p>
+     *
+     * <p>The typical use of this method is inside a constructor as in
+     * the following example:</p>
+     *
+     * <pre>
+     * import org.apache.commons.lang.exception.ExceptionUtils;
+     *  
+     * public class MyException extends Exception {
+     *  
+     *    public MyException(String msg) {
+     *       super(msg);
+     *    }
+     *
+     *    public MyException(String msg, Throwable cause) {
+     *       super(msg);
+     *       ExceptionUtils.setCause(this, cause);
+     *    }
+     * }
+     * </pre>
+     *
+     * @param target  the target <code>Throwable</code>
+     * @param cause  the <code>Throwable</code> to set in the target
+     * @return a <code>true</code> if the target has been modified
+     * @since 2.2
+     */
+    public static boolean setCause(Throwable target, Throwable cause) {
+        if (target == null) {
+            throw new NullArgumentException("target");
+        }
+        Object[] causeArgs = new Object[]{cause};
+        boolean modifiedTarget = false;
+        if (THROWABLE_INITCAUSE_METHOD != null) {
+            try {
+                THROWABLE_INITCAUSE_METHOD.invoke(target, causeArgs);
+                modifiedTarget = true;
+            } catch (IllegalAccessException ignored) {
+                // Exception ignored.
+            } catch (InvocationTargetException ignored) {
+                // Exception ignored.
+            }
+        }
+        try {
+            Method setCauseMethod = target.getClass().getMethod("setCause", new Class[]{Throwable.class});
+            setCauseMethod.invoke(target, causeArgs);
+            modifiedTarget = true;
+        } catch (NoSuchMethodException ignored) {
+            // Exception ignored.
+        } catch (IllegalAccessException ignored) {
+            // Exception ignored.
+        } catch (InvocationTargetException ignored) {
+            // Exception ignored.
+        }
+        return modifiedTarget;
+    }
+
+    /**
+     * Returns the given list as a <code>String[]</code>.
+     * @param list a list to transform.
+     * @return the given list as a <code>String[]</code>.
+     */
+    private static String[] toArray(List list) {
+        return (String[]) list.toArray(new String[list.size()]);
+    }
+
+    /**
+     * Returns {@link #CAUSE_METHOD_NAMES} as a List.
+     *
+     * @return {@link #CAUSE_METHOD_NAMES} as a List.
+     */
+    private static ArrayList getCauseMethodNameList() {
+        synchronized(CAUSE_METHOD_NAMES_LOCK) {
+            return new ArrayList(Arrays.asList(CAUSE_METHOD_NAMES));
+        }
+    }
+
+    /**
+     * <p>Tests if the list of method names used in the search for <code>Throwable</code>
+     * objects include the given name.</p>
+     * 
+     * @param methodName  the methodName to search in the list.
+     * @return if the list of method names used in the search for <code>Throwable</code>
+     *  objects include the given name.
+     * @since 2.1
+     */
+    public static boolean isCauseMethodName(String methodName) {
+        synchronized(CAUSE_METHOD_NAMES_LOCK) {
+            return ArrayUtils.indexOf(CAUSE_METHOD_NAMES, methodName) >= 0;
+        }
     }
 
     //-----------------------------------------------------------------------
@@ -97,7 +251,9 @@ public class ExceptionUtils {
      *
      * <p>The method searches for methods with specific names that return a 
      * <code>Throwable</code> object. This will pick up most wrapping exceptions,
-     * including those from JDK 1.4.
+     * including those from JDK 1.4, and
+     * {@link org.apache.commons.lang3.exception.NestableException NestableException}.
+     * The method names can be added to using {@link #addCauseMethodName(String)}.</p>
      *
      * <p>The default list searched for are:</p>
      * <ul>
@@ -111,21 +267,30 @@ public class ExceptionUtils {
      *  <li><code>getNested()</code></li>
      * </ul>
      * 
+     * <p>In the absence of any such method, the object is inspected for a
+     * <code>detail</code> field assignable to a <code>Throwable</code>.</p>
+     *
      * <p>If none of the above is found, returns <code>null</code>.</p>
      *
      * @param throwable  the throwable to introspect for a cause, may be null
      * @return the cause of the <code>Throwable</code>,
      *  <code>null</code> if none found or null throwable input
      * @since 1.0
-     * @deprecated This feature will be removed in Lang 4.0
      */
-    @Deprecated
     public static Throwable getCause(Throwable throwable) {
-        return getCause(throwable, CAUSE_METHOD_NAMES);
+        synchronized(CAUSE_METHOD_NAMES_LOCK) {
+            return getCause(throwable, CAUSE_METHOD_NAMES);
+        }
     }
 
     /**
      * <p>Introspects the <code>Throwable</code> to obtain the cause.</p>
+     *
+     * <ol>
+     * <li>Try known exception types.</li>
+     * <li>Try the supplied array of method names.</li>
+     * <li>Try the field 'detail'.</li>
+     * </ol>
      *
      * <p>A <code>null</code> set of method names means use the default set.
      * A <code>null</code> in the set of method names will be ignored.</p>
@@ -135,28 +300,33 @@ public class ExceptionUtils {
      * @return the cause of the <code>Throwable</code>,
      *  <code>null</code> if none found or null throwable input
      * @since 1.0
-     * @deprecated This feature will be removed in Lang 4.0
      */
-    @Deprecated
     public static Throwable getCause(Throwable throwable, String[] methodNames) {
         if (throwable == null) {
             return null;
         }
-
-        if (methodNames == null) {
-            methodNames = CAUSE_METHOD_NAMES;
-        }
-
-        for (String methodName : methodNames) {
-            if (methodName != null) {
-                Throwable cause = getCauseUsingMethodName(throwable, methodName);
-                if (cause != null) {
-                    return cause;
+        Throwable cause = getCauseUsingWellKnownTypes(throwable);
+        if (cause == null) {
+            if (methodNames == null) {
+                synchronized(CAUSE_METHOD_NAMES_LOCK) {
+                    methodNames = CAUSE_METHOD_NAMES;
                 }
             }
-        }
+            for (int i = 0; i < methodNames.length; i++) {
+                String methodName = methodNames[i];
+                if (methodName != null) {
+                    cause = getCauseUsingMethodName(throwable, methodName);
+                    if (cause != null) {
+                        break;
+                    }
+                }
+            }
 
-        return null;
+            if (cause == null) {
+                cause = getCauseUsingFieldName(throwable, "detail");
+            }
+        }
+        return cause;
     }
 
     /**
@@ -177,8 +347,30 @@ public class ExceptionUtils {
      *  <code>null</code> if none found or null throwable input
      */
     public static Throwable getRootCause(Throwable throwable) {
-        List<Throwable> list = getThrowableList(throwable);
+        List list = getThrowableList(throwable);
         return (list.size() < 2 ? null : (Throwable)list.get(list.size() - 1));
+    }
+
+    /**
+     * <p>Finds a <code>Throwable</code> for known types.</p>
+     * 
+     * <p>Uses <code>instanceof</code> checks to examine the exception,
+     * looking for well known types which could contain chained or
+     * wrapped exceptions.</p>
+     *
+     * @param throwable  the exception to examine
+     * @return the wrapped exception, or <code>null</code> if not found
+     */
+    private static Throwable getCauseUsingWellKnownTypes(Throwable throwable) {
+        if (throwable instanceof Nestable) {
+            return ((Nestable) throwable).getCause();
+        } else if (throwable instanceof SQLException) {
+            return ((SQLException) throwable).getNextException();
+        } else if (throwable instanceof InvocationTargetException) {
+            return ((InvocationTargetException) throwable).getTargetException();
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -188,29 +380,124 @@ public class ExceptionUtils {
      * @param methodName  the name of the method to find and invoke
      * @return the wrapped exception, or <code>null</code> if not found
      */
-    // TODO: Remove in Lang 4.0
     private static Throwable getCauseUsingMethodName(Throwable throwable, String methodName) {
         Method method = null;
         try {
-            method = throwable.getClass().getMethod(methodName);
-        } catch (NoSuchMethodException ignored) { // NOPMD
+            method = throwable.getClass().getMethod(methodName, null);
+        } catch (NoSuchMethodException ignored) {
             // exception ignored
-        } catch (SecurityException ignored) { // NOPMD
+        } catch (SecurityException ignored) {
             // exception ignored
         }
 
         if (method != null && Throwable.class.isAssignableFrom(method.getReturnType())) {
             try {
-                return (Throwable) method.invoke(throwable);
-            } catch (IllegalAccessException ignored) { // NOPMD
+                return (Throwable) method.invoke(throwable, ArrayUtils.EMPTY_OBJECT_ARRAY);
+            } catch (IllegalAccessException ignored) {
                 // exception ignored
-            } catch (IllegalArgumentException ignored) { // NOPMD
+            } catch (IllegalArgumentException ignored) {
                 // exception ignored
-            } catch (InvocationTargetException ignored) { // NOPMD
+            } catch (InvocationTargetException ignored) {
                 // exception ignored
             }
         }
         return null;
+    }
+
+    /**
+     * <p>Finds a <code>Throwable</code> by field name.</p>
+     *
+     * @param throwable  the exception to examine
+     * @param fieldName  the name of the attribute to examine
+     * @return the wrapped exception, or <code>null</code> if not found
+     */
+    private static Throwable getCauseUsingFieldName(Throwable throwable, String fieldName) {
+        Field field = null;
+        try {
+            field = throwable.getClass().getField(fieldName);
+        } catch (NoSuchFieldException ignored) {
+            // exception ignored
+        } catch (SecurityException ignored) {
+            // exception ignored
+        }
+
+        if (field != null && Throwable.class.isAssignableFrom(field.getType())) {
+            try {
+                return (Throwable) field.get(throwable);
+            } catch (IllegalAccessException ignored) {
+                // exception ignored
+            } catch (IllegalArgumentException ignored) {
+                // exception ignored
+            }
+        }
+        return null;
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * <p>Checks if the Throwable class has a <code>getCause</code> method.</p>
+     *
+     * <p>This is true for JDK 1.4 and above.</p>
+     *
+     * @return true if Throwable is nestable
+     * @since 2.0
+     */
+    public static boolean isThrowableNested() {
+        return THROWABLE_CAUSE_METHOD != null;
+    }
+    
+    /**
+     * <p>Checks whether this <code>Throwable</code> class can store a cause.</p>
+     *
+     * <p>This method does <b>not</b> check whether it actually does store a cause.<p>
+     *
+     * @param throwable  the <code>Throwable</code> to examine, may be null
+     * @return boolean <code>true</code> if nested otherwise <code>false</code>
+     * @since 2.0
+     */
+    public static boolean isNestedThrowable(Throwable throwable) {
+        if (throwable == null) {
+            return false;
+        }
+
+        if (throwable instanceof Nestable) {
+            return true;
+        } else if (throwable instanceof SQLException) {
+            return true;
+        } else if (throwable instanceof InvocationTargetException) {
+            return true;
+        } else if (isThrowableNested()) {
+            return true;
+        }
+
+        Class cls = throwable.getClass();
+        synchronized(CAUSE_METHOD_NAMES_LOCK) {
+            for (int i = 0, isize = CAUSE_METHOD_NAMES.length; i < isize; i++) {
+                try {
+                    Method method = cls.getMethod(CAUSE_METHOD_NAMES[i], null);
+                    if (method != null && Throwable.class.isAssignableFrom(method.getReturnType())) {
+                        return true;
+                    }
+                } catch (NoSuchMethodException ignored) {
+                    // exception ignored
+                } catch (SecurityException ignored) {
+                    // exception ignored
+                }
+            }
+        }
+
+        try {
+            Field field = cls.getField("detail");
+            if (field != null) {
+                return true;
+            }
+        } catch (NoSuchFieldException ignored) {
+            // exception ignored
+        } catch (SecurityException ignored) {
+            // exception ignored
+        }
+
+        return false;
     }
 
     //-----------------------------------------------------------------------
@@ -254,8 +541,8 @@ public class ExceptionUtils {
      * @return the array of throwables, never null
      */
     public static Throwable[] getThrowables(Throwable throwable) {
-        List<Throwable> list = getThrowableList(throwable);
-        return list.toArray(new Throwable[list.size()]);
+        List list = getThrowableList(throwable);
+        return (Throwable[]) list.toArray(new Throwable[list.size()]);
     }
 
     /**
@@ -277,8 +564,8 @@ public class ExceptionUtils {
      * @return the list of throwables, never null
      * @since Commons Lang 2.2
      */
-    public static List<Throwable> getThrowableList(Throwable throwable) {
-        List<Throwable> list = new ArrayList<Throwable>();
+    public static List getThrowableList(Throwable throwable) {
+        List list = new ArrayList();
         while (throwable != null && list.contains(throwable) == false) {
             list.add(throwable);
             throwable = ExceptionUtils.getCause(throwable);
@@ -301,7 +588,7 @@ public class ExceptionUtils {
      * @param clazz  the class to search for, subclasses do not match, null returns -1
      * @return the index into the throwable chain, -1 if no match or null input
      */
-    public static int indexOfThrowable(Throwable throwable, Class<?> clazz) {
+    public static int indexOfThrowable(Throwable throwable, Class clazz) {
         return indexOf(throwable, clazz, 0, false);
     }
 
@@ -324,7 +611,7 @@ public class ExceptionUtils {
      *  negative treated as zero, larger than chain size returns -1
      * @return the index into the throwable chain, -1 if no match or null input
      */
-    public static int indexOfThrowable(Throwable throwable, Class<?> clazz, int fromIndex) {
+    public static int indexOfThrowable(Throwable throwable, Class clazz, int fromIndex) {
         return indexOf(throwable, clazz, fromIndex, false);
     }
 
@@ -344,7 +631,7 @@ public class ExceptionUtils {
      * @return the index into the throwable chain, -1 if no match or null input
      * @since 2.1
      */
-    public static int indexOfType(Throwable throwable, Class<?> type) {
+    public static int indexOfType(Throwable throwable, Class type) {
         return indexOf(throwable, type, 0, true);
     }
 
@@ -368,7 +655,7 @@ public class ExceptionUtils {
      * @return the index into the throwable chain, -1 if no match or null input
      * @since 2.1
      */
-    public static int indexOfType(Throwable throwable, Class<?> type, int fromIndex) {
+    public static int indexOfType(Throwable throwable, Class type, int fromIndex) {
         return indexOf(throwable, type, fromIndex, true);
     }
 
@@ -383,7 +670,7 @@ public class ExceptionUtils {
      * using references
      * @return index of the <code>type</code> within throwables nested withing the specified <code>throwable</code>
      */
-    private static int indexOf(Throwable throwable, Class<?> type, int fromIndex, boolean subclass) {
+    private static int indexOf(Throwable throwable, Class type, int fromIndex, boolean subclass) {
         if (throwable == null || type == null) {
             return -1;
         }
@@ -460,8 +747,8 @@ public class ExceptionUtils {
             throw new IllegalArgumentException("The PrintStream must not be null");
         }
         String trace[] = getRootCauseStackTrace(throwable);
-        for (String element : trace) {
-            stream.println(element);
+        for (int i = 0; i < trace.length; i++) {
+            stream.println(trace[i]);
         }
         stream.flush();
     }
@@ -493,8 +780,8 @@ public class ExceptionUtils {
             throw new IllegalArgumentException("The PrintWriter must not be null");
         }
         String trace[] = getRootCauseStackTrace(throwable);
-        for (String element : trace) {
-            writer.println(element);
+        for (int i = 0; i < trace.length; i++) {
+            writer.println(trace[i]);
         }
         writer.flush();
     }
@@ -519,10 +806,10 @@ public class ExceptionUtils {
         }
         Throwable throwables[] = getThrowables(throwable);
         int count = throwables.length;
-        List<String> frames = new ArrayList<String>();
-        List<String> nextTrace = getStackFrameList(throwables[count - 1]);
+        ArrayList frames = new ArrayList();
+        List nextTrace = getStackFrameList(throwables[count - 1]);
         for (int i = count; --i >= 0;) {
-            List<String> trace = nextTrace;
+            List trace = nextTrace;
             if (i != 0) {
                 nextTrace = getStackFrameList(throwables[i - 1]);
                 removeCommonFrames(trace, nextTrace);
@@ -536,7 +823,7 @@ public class ExceptionUtils {
                 frames.add(trace.get(j));
             }
         }
-        return frames.toArray(new String[frames.size()]);
+        return (String[]) frames.toArray(new String[0]);
     }
 
     /**
@@ -547,7 +834,7 @@ public class ExceptionUtils {
      * @throws IllegalArgumentException if either argument is null
      * @since 2.0
      */
-    public static void removeCommonFrames(List<String> causeFrames, List<String> wrapperFrames) {
+    public static void removeCommonFrames(List causeFrames, List wrapperFrames) {
         if (causeFrames == null || wrapperFrames == null) {
             throw new IllegalArgumentException("The List must not be null");
         }
@@ -556,14 +843,38 @@ public class ExceptionUtils {
         while (causeFrameIndex >= 0 && wrapperFrameIndex >= 0) {
             // Remove the frame from the cause trace if it is the same
             // as in the wrapper trace
-            String causeFrame = causeFrames.get(causeFrameIndex);
-            String wrapperFrame = wrapperFrames.get(wrapperFrameIndex);
+            String causeFrame = (String) causeFrames.get(causeFrameIndex);
+            String wrapperFrame = (String) wrapperFrames.get(wrapperFrameIndex);
             if (causeFrame.equals(wrapperFrame)) {
                 causeFrames.remove(causeFrameIndex);
             }
             causeFrameIndex--;
             wrapperFrameIndex--;
         }
+    }
+
+    //-----------------------------------------------------------------------
+    /**
+     * <p>A way to get the entire nested stack-trace of an throwable.</p>
+     *
+     * <p>The result of this method is highly dependent on the JDK version
+     * and whether the exceptions override printStackTrace or not.</p>
+     *
+     * @param throwable  the <code>Throwable</code> to be examined
+     * @return the nested stack trace, with the root cause first
+     * @since 2.0
+     */
+    public static String getFullStackTrace(Throwable throwable) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw, true);
+        Throwable[] ts = getThrowables(throwable);
+        for (int i = 0; i < ts.length; i++) {
+            ts[i].printStackTrace(pw);
+            if (isNestedThrowable(ts[i])) {
+                break;
+            }
+        }
+        return sw.getBuffer().toString();
     }
 
     //-----------------------------------------------------------------------
@@ -612,17 +923,21 @@ public class ExceptionUtils {
      *
      * <p>The end of line is determined by the value of {@link SystemUtils#LINE_SEPARATOR}.</p>
      *
+     * <p>Functionality shared between the
+     * <code>getStackFrames(Throwable)</code> methods of this and the
+     * {@link org.apache.commons.lang3.exception.NestableDelegate} classes.</p>
+     *
      * @param stackTrace  a stack trace String
      * @return an array where each element is a line from the argument
      */
     static String[] getStackFrames(String stackTrace) {
         String linebreak = SystemUtils.LINE_SEPARATOR;
         StringTokenizer frames = new StringTokenizer(stackTrace, linebreak);
-        List<String> list = new ArrayList<String>();
+        List list = new ArrayList();
         while (frames.hasMoreTokens()) {
             list.add(frames.nextToken());
         }
-        return list.toArray(new String[list.size()]);
+        return toArray(list);
     }
 
     /**
@@ -637,11 +952,11 @@ public class ExceptionUtils {
      * @param t is any throwable
      * @return List of stack frames
      */
-    static List<String> getStackFrameList(Throwable t) {
+    static List getStackFrameList(Throwable t) {
         String stackTrace = getStackTrace(t);
         String linebreak = SystemUtils.LINE_SEPARATOR;
         StringTokenizer frames = new StringTokenizer(stackTrace, linebreak);
-        List<String> list = new ArrayList<String>();
+        List list = new ArrayList();
         boolean traceStarted = false;
         while (frames.hasMoreTokens()) {
             String token = frames.nextToken();

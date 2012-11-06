@@ -17,7 +17,8 @@
 package org.apache.commons.lang3.reflect.testbed;
 
 /**
- * @version $Id: Bar.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author mbenson
+ * @version $Id: Bar.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public interface Bar {
     public static final String VALUE = "bar";

@@ -25,7 +25,10 @@ import junit.framework.TestCase;
 /**
  * Unit tests for {@link org.apache.commons.lang3.builder.ToStringBuilder}.
  *
- * @version $Id: ToStringBuilderTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @author <a href="mailto:ggregory@seagullsw.com">Gary Gregory</a>
+ * @author <a href="mailto:alex@apache.org">Alex Chaffee</a>
+ * @version $Id: ToStringBuilderTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class ToStringBuilderTest extends TestCase {
 
@@ -297,13 +300,16 @@ public class ToStringBuilderTest extends TestCase {
 
     // Reflection hierarchy tests
 
+    /* Following Test removed because its dependant on the Java implementation
+     * (currently passes using Sun/Oracle implementations, but fails for IBM's JDK 6)
     public void testReflectionHierarchyArrayList() {
-        List<Object> base = new ArrayList<Object>();
+        List base = new ArrayList();
         String baseStr = this.toBaseString(base);
         assertEquals(baseStr + "[elementData={<null>,<null>,<null>,<null>,<null>,<null>,<null>,<null>,<null>,<null>},size=0,modCount=0]", ToStringBuilder.reflectionToString(base, null, true));
         assertEquals(baseStr + "[size=0]", ToStringBuilder.reflectionToString(base, null, false));
         this.validateNullToStringStyleRegistry();
     }
+     */
 
     public void testReflectionHierarchy() {
         ReflectionTestFixtureA baseA = new ReflectionTestFixtureA();
@@ -331,16 +337,12 @@ public class ToStringBuilderTest extends TestCase {
     }
 
     static class ReflectionTestFixtureA {
-        @SuppressWarnings("unused")
         private char a='a';
-        @SuppressWarnings("unused")
         private transient char transientA='t';
     }
 
     static class ReflectionTestFixtureB extends ReflectionTestFixtureA {
-        @SuppressWarnings("unused")
         private char b='b';
-        @SuppressWarnings("unused")
         private transient char transientB='t';
     }
 
@@ -352,12 +354,10 @@ public class ToStringBuilderTest extends TestCase {
     static class Outer {
         Inner inner = new Inner();
         class Inner {
-            @Override
             public String toString() {
                 return ToStringBuilder.reflectionToString(this);
             }
         }
-        @Override
         public String toString() {
             return ToStringBuilder.reflectionToString(this);
         }
@@ -384,7 +384,7 @@ public class ToStringBuilderTest extends TestCase {
         Object[] objects = new Object[1];
         Object[] objectsLevel2 = new Object[1];
         objects[0] = objectsLevel2;
-        objectsLevel2[0] = objects;
+        objectsLevel2[0] = (Object) objects;
         assertEquals(
             this.toBaseString(objects) + "[{{" + this.toBaseString(objects) + "}}]",
             ToStringBuilder.reflectionToString(objects));
@@ -422,7 +422,6 @@ public class ToStringBuilderTest extends TestCase {
     static class ReflectionTestCycleA {
         ReflectionTestCycleB b;
 
-        @Override
         public String toString() {
             return ToStringBuilder.reflectionToString(this);
         }
@@ -434,7 +433,6 @@ public class ToStringBuilderTest extends TestCase {
     static class ReflectionTestCycleB {
         ReflectionTestCycleA a;
 
-        @Override
         public String toString() {
             return ToStringBuilder.reflectionToString(this);
         }
@@ -453,28 +451,24 @@ public class ToStringBuilderTest extends TestCase {
             this.o = o;
         }
 
-        @Override
         public String toString() {
             return ToStringBuilder.reflectionToString(this);
         }
     }
 
     private static class SelfInstanceVarReflectionTestFixture {
-        @SuppressWarnings("unused")
         private SelfInstanceVarReflectionTestFixture typeIsSelf;
 
         public SelfInstanceVarReflectionTestFixture() {
             this.typeIsSelf = this;
         }
 
-        @Override
         public String toString() {
             return ToStringBuilder.reflectionToString(this);
         }
       }
 
     private static class SelfInstanceTwoVarsReflectionTestFixture {
-        @SuppressWarnings("unused")
         private SelfInstanceTwoVarsReflectionTestFixture typeIsSelf;
         private String otherType = "The Other Type";
 
@@ -486,7 +480,6 @@ public class ToStringBuilderTest extends TestCase {
             return this.otherType;
         }
 
-        @Override
         public String toString() {
             return ToStringBuilder.reflectionToString(this);
         }
@@ -554,7 +547,7 @@ public class ToStringBuilderTest extends TestCase {
     public void testReflectionArrayAndObjectCycle() throws Exception {
         Object[] objects = new Object[1];
         SimpleReflectionTestFixture simple = new SimpleReflectionTestFixture(objects);
-        objects[0] = simple;
+        objects[0] = (Object) simple;
         assertEquals(
             this.toBaseString(objects)
                 + "[{"
@@ -609,29 +602,12 @@ public class ToStringBuilderTest extends TestCase {
         assertEquals(baseStr + "[a=3]", new ToStringBuilder(base).append("a", i3).toString());
         assertEquals(baseStr + "[a=3,b=4]", new ToStringBuilder(base).append("a", i3).append("b", i4).toString());
         assertEquals(baseStr + "[a=<Integer>]", new ToStringBuilder(base).append("a", i3, false).toString());
-        assertEquals(baseStr + "[a=<size=0>]", new ToStringBuilder(base).append("a", new ArrayList<Object>(), false).toString());
-        assertEquals(baseStr + "[a=[]]", new ToStringBuilder(base).append("a", new ArrayList<Object>(), true).toString());
-        assertEquals(baseStr + "[a=<size=0>]", new ToStringBuilder(base).append("a", new HashMap<Object, Object>(), false).toString());
-        assertEquals(baseStr + "[a={}]", new ToStringBuilder(base).append("a", new HashMap<Object, Object>(), true).toString());
+        assertEquals(baseStr + "[a=<size=0>]", new ToStringBuilder(base).append("a", new ArrayList(), false).toString());
+        assertEquals(baseStr + "[a=[]]", new ToStringBuilder(base).append("a", new ArrayList(), true).toString());
+        assertEquals(baseStr + "[a=<size=0>]", new ToStringBuilder(base).append("a", new HashMap(), false).toString());
+        assertEquals(baseStr + "[a={}]", new ToStringBuilder(base).append("a", new HashMap(), true).toString());
         assertEquals(baseStr + "[a=<size=0>]", new ToStringBuilder(base).append("a", (Object) new String[0], false).toString());
         assertEquals(baseStr + "[a={}]", new ToStringBuilder(base).append("a", (Object) new String[0], true).toString());
-    }
-    
-    public void testObjectBuild() {
-        Integer i3 = new Integer(3);
-        Integer i4 = new Integer(4);
-        assertEquals(baseStr + "[<null>]", new ToStringBuilder(base).append((Object) null).build());
-        assertEquals(baseStr + "[3]", new ToStringBuilder(base).append(i3).build());
-        assertEquals(baseStr + "[a=<null>]", new ToStringBuilder(base).append("a", (Object) null).build());
-        assertEquals(baseStr + "[a=3]", new ToStringBuilder(base).append("a", i3).build());
-        assertEquals(baseStr + "[a=3,b=4]", new ToStringBuilder(base).append("a", i3).append("b", i4).build());
-        assertEquals(baseStr + "[a=<Integer>]", new ToStringBuilder(base).append("a", i3, false).build());
-        assertEquals(baseStr + "[a=<size=0>]", new ToStringBuilder(base).append("a", new ArrayList<Object>(), false).build());
-        assertEquals(baseStr + "[a=[]]", new ToStringBuilder(base).append("a", new ArrayList<Object>(), true).build());
-        assertEquals(baseStr + "[a=<size=0>]", new ToStringBuilder(base).append("a", new HashMap<Object, Object>(), false).build());
-        assertEquals(baseStr + "[a={}]", new ToStringBuilder(base).append("a", new HashMap<Object, Object>(), true).build());
-        assertEquals(baseStr + "[a=<size=0>]", new ToStringBuilder(base).append("a", (Object) new String[0], false).build());
-        assertEquals(baseStr + "[a={}]", new ToStringBuilder(base).append("a", (Object) new String[0], true).build());
     }
 
     public void testLong() {
@@ -640,7 +616,6 @@ public class ToStringBuilderTest extends TestCase {
         assertEquals(baseStr + "[a=3,b=4]", new ToStringBuilder(base).append("a", 3L).append("b", 4L).toString());
     }
 
-    @SuppressWarnings("cast") // cast is not really needed, keep for consistency
     public void testInt() {
         assertEquals(baseStr + "[3]", new ToStringBuilder(base).append((int) 3).toString());
         assertEquals(baseStr + "[a=3]", new ToStringBuilder(base).append("a", (int) 3).toString());
@@ -665,7 +640,6 @@ public class ToStringBuilderTest extends TestCase {
         assertEquals(baseStr + "[a=3,b=4]", new ToStringBuilder(base).append("a", (byte) 3).append("b", (byte) 4).toString());
     }
 
-    @SuppressWarnings("cast")
     public void testDouble() {
         assertEquals(baseStr + "[3.2]", new ToStringBuilder(base).append((double) 3.2).toString());
         assertEquals(baseStr + "[a=3.2]", new ToStringBuilder(base).append("a", (double) 3.2).toString());
@@ -852,7 +826,6 @@ public class ToStringBuilderTest extends TestCase {
     static class ObjectCycle {
         Object obj;
 
-        @Override
         public String toString() {
             return new ToStringBuilder(this).append(obj).toString();
         }
@@ -1004,7 +977,6 @@ public class ToStringBuilderTest extends TestCase {
      */
     class MultiLineTestObject {
         Integer i = new Integer(31337);
-        @Override
         public String toString() {
             return new ToStringBuilder(this).append("testInt", i).toString();
         }

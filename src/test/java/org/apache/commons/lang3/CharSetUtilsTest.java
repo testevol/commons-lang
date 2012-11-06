@@ -19,12 +19,17 @@ package org.apache.commons.lang3;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 
+import org.apache.commons.lang3.CharSetUtils;
+
 import junit.framework.TestCase;
 
 /**
  * Unit tests {@link org.apache.commons.lang3.CharSetUtils}.
  *
- * @version $Id: CharSetUtilsTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @author <a href="mailto:ridesmet@users.sourceforge.net">Ringo De Smet</a>
+ * @author Gary D. Gregory
+ * @version $Id: CharSetUtilsTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class CharSetUtilsTest extends TestCase {
     
@@ -35,11 +40,19 @@ public class CharSetUtilsTest extends TestCase {
     //-----------------------------------------------------------------------
     public void testConstructor() {
         assertNotNull(new CharSetUtils());
-        Constructor<?>[] cons = CharSetUtils.class.getDeclaredConstructors();
+        Constructor[] cons = CharSetUtils.class.getDeclaredConstructors();
         assertEquals(1, cons.length);
         assertEquals(true, Modifier.isPublic(cons[0].getModifiers()));
         assertEquals(true, Modifier.isPublic(CharSetUtils.class.getModifiers()));
         assertEquals(false, Modifier.isFinal(CharSetUtils.class.getModifiers()));
+    }
+    
+    //-----------------------------------------------------------------------
+    public void testEvaluateSet_Stringarray() {
+        assertEquals(null, CharSetUtils.evaluateSet((String[]) null));
+        assertEquals("[]", CharSetUtils.evaluateSet(new String[0]).toString());
+        assertEquals("[]", CharSetUtils.evaluateSet(new String[] {null}).toString());
+        assertEquals("[a-e]", CharSetUtils.evaluateSet(new String[] {"a-e"}).toString());
     }
     
     //-----------------------------------------------------------------------
@@ -200,5 +213,45 @@ public class CharSetUtilsTest extends TestCase {
         assertEquals("", CharSetUtils.delete("----", new String[] { "-" }));
         assertEquals("heo", CharSetUtils.delete("hello", new String[] { "l" }));
     }
+    
+    
+    public void testTranslate() {
+        assertEquals(null, CharSetUtils.translate(null, null, null));
+        assertEquals("", CharSetUtils.translate("", "a", "b"));
+        assertEquals("jelly", CharSetUtils.translate("hello", "ho", "jy"));
+        assertEquals("jellj", CharSetUtils.translate("hello", "ho", "j"));
+        assertEquals("jelly", CharSetUtils.translate("hello", "ho", "jyx"));
+        assertEquals("\rhello\r", CharSetUtils.translate("\nhello\n", "\n", "\r"));
+        assertEquals("hello", CharSetUtils.translate("hello", "", "x"));
+        assertEquals("hello", CharSetUtils.translate("hello", "", ""));
+        assertEquals("hello", CharSetUtils.translate("hello", "", ""));
+        // From http://issues.apache.org/bugzilla/show_bug.cgi?id=25454
+        assertEquals("q651.506bera", CharSetUtils.translate("d216.102oren", "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789",
+                "nopqrstuvwxyzabcdefghijklmNOPQRSTUVWXYZABCDEFGHIJKLM567891234"));
+    }
+
+    public void testTranslateNullPointerException() {
+        try {
+            CharSetUtils.translate("hello", null, null);
+            fail("Expecting NullPointerException");
+        } catch (NullPointerException ex) {
+        }
+        try {
+            CharSetUtils.translate("hello", "h", null);
+            fail("Expecting NullPointerException");
+        } catch (NullPointerException ex) {
+        }
+        try {
+            CharSetUtils.translate("hello", null, "a");
+            fail("Expecting NullPointerException");
+        } catch (NullPointerException ex) {
+        }
+        try {
+            CharSetUtils.translate("hello", "h", "");
+            fail("Expecting ArrayIndexOutOfBoundsException");
+        } catch (ArrayIndexOutOfBoundsException ex) {
+        }
+    }
+         
     
 }

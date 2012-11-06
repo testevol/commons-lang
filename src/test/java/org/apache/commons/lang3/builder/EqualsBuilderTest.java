@@ -23,7 +23,11 @@ import junit.framework.TestCase;
 /**
  * Unit tests {@link org.apache.commons.lang3.builder.EqualsBuilder}.
  *
- * @version $Id: EqualsBuilderTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @author <a href="mailto:sdowney@panix.com">Steve Downey</a>
+ * @author <a href="mailto:ggregory@seagullsw.com">Gary Gregory</a>
+ * @author Maarten Coene
+ * @version $Id: EqualsBuilderTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class EqualsBuilderTest extends TestCase {
 
@@ -40,7 +44,6 @@ public class EqualsBuilderTest extends TestCase {
         public TestObject(int a) {
             this.a = a;
         }
-        @Override
         public boolean equals(Object o) {
             if (o == null) { return false; }
             if (o == this) { return true; }
@@ -70,7 +73,6 @@ public class EqualsBuilderTest extends TestCase {
             super(a);
             this.b = b;
         }
-        @Override
         public boolean equals(Object o) {
             if (o == null) { return false; }
             if (o == this) { return true; }
@@ -98,7 +100,6 @@ public class EqualsBuilderTest extends TestCase {
     }
 
     static class TestTSubObject extends TestObject {
-        @SuppressWarnings("unused")
         private transient int t;
         public TestTSubObject(int a, int t) {
             super(a);
@@ -107,7 +108,6 @@ public class EqualsBuilderTest extends TestCase {
     }
 
     static class TestTTSubObject extends TestTSubObject {
-        @SuppressWarnings("unused")
         private transient int tt;
         public TestTTSubObject(int a, int t, int tt) {
             super(a, t);
@@ -116,7 +116,6 @@ public class EqualsBuilderTest extends TestCase {
     }
 
     static class TestTTLeafObject extends TestTTSubObject {
-        @SuppressWarnings("unused")
         private int leafValue;
         public TestTTLeafObject(int a, int t, int tt, int leafValue) {
             super(a, t, tt);
@@ -233,7 +232,6 @@ public class EqualsBuilderTest extends TestCase {
      * @param toTer Left hand side, equal to to and toBis
      * @param to2 a different TestObject
      * @param oToChange a TestObject that will be changed
-     * @param testTransients whether to test transient instance variables 
      */
     public void testReflectionEqualsEquivalenceRelationship(
         TestObject to,
@@ -300,21 +298,6 @@ public class EqualsBuilderTest extends TestCase {
         assertTrue(!new EqualsBuilder().append(o1, null).isEquals());
         assertTrue(!new EqualsBuilder().append(null, o2).isEquals());
         assertTrue(new EqualsBuilder().append((Object) null, (Object) null).isEquals());
-    }
-    
-    public void testObjectBuild() {
-        TestObject o1 = new TestObject(4);
-        TestObject o2 = new TestObject(5);
-        assertTrue(new EqualsBuilder().append(o1, o1).build());
-        assertTrue(!new EqualsBuilder().append(o1, o2).build());
-        o2.setA(4);
-        assertTrue(new EqualsBuilder().append(o1, o2).build());
-
-        assertTrue(!new EqualsBuilder().append(o1, this).build());
-        
-        assertTrue(!new EqualsBuilder().append(o1, null).build());
-        assertTrue(!new EqualsBuilder().append(null, o2).build());
-        assertTrue(new EqualsBuilder().append((Object) null, (Object) null).build());
     }
 
     public void testLong() {
@@ -889,7 +872,6 @@ public class EqualsBuilderTest extends TestCase {
             this.a = a;
         }
 
-        @Override
         public boolean equals(Object o) {
             if (o == this)
                 return true;
@@ -912,7 +894,6 @@ public class EqualsBuilderTest extends TestCase {
             this.b = b;
         }
 
-        @Override
         public boolean equals(Object o) {
             if (o == this)
                 return true;
@@ -990,11 +971,8 @@ public class EqualsBuilderTest extends TestCase {
     }
 
     static class TestObjectWithMultipleFields {
-        @SuppressWarnings("unused")
         private TestObject one;
-        @SuppressWarnings("unused")
         private TestObject two;
-        @SuppressWarnings("unused")
         private TestObject three;
 
         public TestObjectWithMultipleFields(int one, int two, int three) {
@@ -1003,53 +981,4 @@ public class EqualsBuilderTest extends TestCase {
             this.three = new TestObject(three);
         }
     }
-    
-    /**
-     * Test cyclical object references which cause a StackOverflowException if
-     * not handled properly. s. LANG-606
-     */
-    public void testCyclicalObjectReferences() {
-        TestObjectReference refX1 = new TestObjectReference(1);
-        TestObjectReference x1 = new TestObjectReference(1);
-        x1.setObjectReference(refX1);
-        refX1.setObjectReference(x1);
-
-        TestObjectReference refX2 = new TestObjectReference(1);
-        TestObjectReference x2 = new TestObjectReference(1);
-        x2.setObjectReference(refX2);
-        refX2.setObjectReference(x2);
-
-        TestObjectReference refX3 = new TestObjectReference(2);
-        TestObjectReference x3 = new TestObjectReference(2);
-        x3.setObjectReference(refX3);
-        refX3.setObjectReference(x3);
-
-        assertTrue(x1.equals(x2));
-        assertNull(EqualsBuilder.getRegistry());
-        assertFalse(x1.equals(x3));
-        assertNull(EqualsBuilder.getRegistry());
-        assertFalse(x2.equals(x3));
-        assertNull(EqualsBuilder.getRegistry());
-    }
-
-    static class TestObjectReference {
-        @SuppressWarnings("unused")
-        private TestObjectReference reference;
-        @SuppressWarnings("unused")
-        private TestObject one;
-
-        public TestObjectReference(int one) {
-            this.one = new TestObject(one);
-        }
-
-        public void setObjectReference(TestObjectReference reference) {
-            this.reference = reference;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            return EqualsBuilder.reflectionEquals(this, obj);
-        }
-    }
 }
-

@@ -21,7 +21,8 @@ import junit.framework.TestCase;
 /**
  * Test case for ToStringStyle.
  * 
- * @version $Id: ToStringStyleTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Masato Tezuka
+ * @version $Id: ToStringStyleTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class ToStringStyleTest extends TestCase {
 
@@ -108,6 +109,7 @@ public class ToStringStyleTest extends TestCase {
     /**
      * An object used to test {@link ToStringStyle}.
      * 
+     * @author Scott Bassin
      */
     static class Person {
         /**

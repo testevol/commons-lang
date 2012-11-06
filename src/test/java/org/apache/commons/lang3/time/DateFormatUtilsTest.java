@@ -27,6 +27,11 @@ import junit.framework.TestCase;
 /**
  * TestCase for DateFormatUtils.
  *
+ * @author Apache Software Foundation
+ * @author Apache Ant - DateUtilsTest
+ * @author <a href="mailto:sbailliez@apache.org">Stephane Bailliez</a>
+ * @author <a href="mailto:stefan.bodewig@epost.de">Stefan Bodewig</a>
+ * @author <a href="mailto:ggregory@seagullsw.com">Gary Gregory</a>
  */
 public class DateFormatUtilsTest extends TestCase {
 
@@ -37,7 +42,7 @@ public class DateFormatUtilsTest extends TestCase {
     //-----------------------------------------------------------------------
     public void testConstructor() {
         assertNotNull(new DateFormatUtils());
-        Constructor<?>[] cons = DateFormatUtils.class.getDeclaredConstructors();
+        Constructor[] cons = DateFormatUtils.class.getDeclaredConstructors();
         assertEquals(1, cons.length);
         assertEquals(true, Modifier.isPublic(cons[0].getModifiers()));
         assertEquals(true, Modifier.isPublic(DateFormatUtils.class.getModifiers()));

@@ -17,14 +17,19 @@
 package org.apache.commons.lang3.exception;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
+import java.sql.SQLException;
 import java.util.List;
 
-import junit.framework.TestCase;
+import junit.framework.Assert;
+
+import org.apache.commons.lang3.SystemUtils;
 
 /**
  * Tests {@link org.apache.commons.lang3.exception.ExceptionUtils}.
@@ -45,38 +50,45 @@ import junit.framework.TestCase;
  * Gary Gregory; August 16, 2006.
  * </p>
  * 
+ * @author Apache Software Foundation
+ * @author Daniel L. Rall
+ * @author <a href="mailto:steven@caswell.name">Steven Caswell</a>
+ * @author <a href="mailto:ggregory@seagullsw.com">Gary Gregory</a>
  * @since 1.0
  */
-public class ExceptionUtilsTest extends TestCase {
+public class ExceptionUtilsTest extends junit.framework.TestCase {
     
     private NestableException nested;
     private Throwable withCause;
     private Throwable withoutCause;
     private Throwable jdkNoCause;
+    private ExceptionWithCause selfCause;
     private ExceptionWithCause cyclicCause;
 
     public ExceptionUtilsTest(String name) {
         super(name);
     }
 
-    @Override
+
     public void setUp() {
         withoutCause = createExceptionWithoutCause();
         nested = new NestableException(withoutCause);
         withCause = new ExceptionWithCause(nested);
         jdkNoCause = new NullPointerException();
+        selfCause = new ExceptionWithCause(null);
+        selfCause.setCause(selfCause);
         ExceptionWithCause a = new ExceptionWithCause(null);
         ExceptionWithCause b = new ExceptionWithCause(a);
         a.setCause(b);
         cyclicCause = new ExceptionWithCause(a);
     }
 
-    @Override
     protected void tearDown() throws Exception {
         withoutCause = null;
         nested = null;
         withCause = null;
         jdkNoCause = null;
+        selfCause = null;
         cyclicCause = null;
     }
 
@@ -105,7 +117,7 @@ public class ExceptionUtilsTest extends TestCase {
     
     public void testConstructor() {
         assertNotNull(new ExceptionUtils());
-        Constructor<?>[] cons = ExceptionUtils.class.getDeclaredConstructors();
+        Constructor[] cons = ExceptionUtils.class.getDeclaredConstructors();
         assertEquals(1, cons.length);
         assertEquals(true, Modifier.isPublic(cons[0].getModifiers()));
         assertEquals(true, Modifier.isPublic(ExceptionUtils.class.getModifiers()));
@@ -113,23 +125,51 @@ public class ExceptionUtilsTest extends TestCase {
     }
     
     //-----------------------------------------------------------------------
-    @SuppressWarnings("deprecation") // Specifically tests the deprecated methods
+    
+    public void testCauseMethodNameOps() {
+        this.testCauseMethodNameOps(null);
+        this.testCauseMethodNameOps("");
+        this.testCauseMethodNameOps(" ");
+        this.testCauseMethodNameOps("\t\r\n\t");
+        this.testCauseMethodNameOps("testMethodName");
+    }
+    
+    void testCauseMethodNameOps(String name) {
+        String methodName = "testMethodName";
+        try {
+            Assert.assertFalse(ExceptionUtils.isCauseMethodName(methodName));
+            ExceptionUtils.addCauseMethodName(methodName);            
+            ExceptionUtils.addCauseMethodName(methodName);            
+            Assert.assertTrue(ExceptionUtils.isCauseMethodName(methodName));
+        } finally {
+            ExceptionUtils.removeCauseMethodName(methodName);
+            Assert.assertFalse(
+                    "The method name " + methodName + " should not be in the array", 
+                    ExceptionUtils.isCauseMethodName(methodName));
+        }
+    }
+    
     public void testGetCause_Throwable() {
         assertSame(null, ExceptionUtils.getCause(null));
         assertSame(null, ExceptionUtils.getCause(withoutCause));
         assertSame(withoutCause, ExceptionUtils.getCause(nested));
         assertSame(nested, ExceptionUtils.getCause(withCause));
         assertSame(null, ExceptionUtils.getCause(jdkNoCause));
+        assertSame(selfCause, ExceptionUtils.getCause(selfCause));
         assertSame(cyclicCause.getCause(), ExceptionUtils.getCause(cyclicCause));
         assertSame(((ExceptionWithCause) cyclicCause.getCause()).getCause(), ExceptionUtils.getCause(cyclicCause.getCause()));
         assertSame(cyclicCause.getCause(), ExceptionUtils.getCause(((ExceptionWithCause) cyclicCause.getCause()).getCause()));
     }
 
-    @SuppressWarnings("deprecation") // Specifically tests the deprecated methods
     public void testGetCause_ThrowableArray() {
         assertSame(null, ExceptionUtils.getCause(null, null));
         assertSame(null, ExceptionUtils.getCause(null, new String[0]));
 
+        // match because known type        
+        assertSame(withoutCause, ExceptionUtils.getCause(nested, null));
+        assertSame(withoutCause, ExceptionUtils.getCause(nested, new String[0]));
+        assertSame(withoutCause, ExceptionUtils.getCause(nested, new String[] {"getCause"}));
+        
         // not known type, so match on supplied method names
         assertSame(nested, ExceptionUtils.getCause(withCause, null));  // default names
         assertSame(null, ExceptionUtils.getCause(withCause, new String[0]));
@@ -150,7 +190,51 @@ public class ExceptionUtilsTest extends TestCase {
         assertSame(withoutCause, ExceptionUtils.getRootCause(nested));
         assertSame(withoutCause, ExceptionUtils.getRootCause(withCause));
         assertSame(null, ExceptionUtils.getRootCause(jdkNoCause));
+        assertSame(null, ExceptionUtils.getRootCause(selfCause));
         assertSame(((ExceptionWithCause) cyclicCause.getCause()).getCause(), ExceptionUtils.getRootCause(cyclicCause));
+    }
+
+    public void testSetCause() {
+        Exception cause = new ExceptionWithoutCause();
+        assertEquals(true, ExceptionUtils.setCause(new ExceptionWithCause(null), cause));
+        if (SystemUtils.isJavaVersionAtLeast(140)) {
+            assertEquals(true, ExceptionUtils.setCause(new ExceptionWithoutCause(), cause));
+        }
+    }
+
+    /**
+     * Tests overriding a cause to <code>null</code>.
+     */
+    public void testSetCauseToNull() {
+        Exception ex = new ExceptionWithCause(new IOException());
+        assertEquals(true, ExceptionUtils.setCause(ex, new IllegalStateException()));
+        assertNotNull(ExceptionUtils.getCause(ex));
+        assertEquals(true, ExceptionUtils.setCause(ex, null));
+        assertNull(ExceptionUtils.getCause(ex));
+    }
+
+    //-----------------------------------------------------------------------
+    public void testIsThrowableNested() {
+        if (SystemUtils.isJavaVersionAtLeast(140)) {
+            assertEquals(true, ExceptionUtils.isThrowableNested());
+        } else {
+            assertEquals(false, ExceptionUtils.isThrowableNested());
+        }
+    }
+    
+    public void testIsNestedThrowable_Throwable() {
+        assertEquals(true, ExceptionUtils.isNestedThrowable(new SQLException()));
+        assertEquals(true, ExceptionUtils.isNestedThrowable(new InvocationTargetException(new Exception())));
+        assertEquals(true, ExceptionUtils.isNestedThrowable(new NestableRuntimeException()));
+        assertEquals(true, ExceptionUtils.isNestedThrowable(withCause));
+        assertEquals(true, ExceptionUtils.isNestedThrowable(nested));
+        if (SystemUtils.isJavaVersionAtLeast(140)) {
+            assertEquals(true, ExceptionUtils.isNestedThrowable(withoutCause));
+            assertEquals(true, ExceptionUtils.isNestedThrowable(new Throwable()));
+        } else {
+            assertEquals(false, ExceptionUtils.isNestedThrowable(withoutCause));
+            assertEquals(false, ExceptionUtils.isNestedThrowable(new Throwable()));
+        }
     }
 
     //-----------------------------------------------------------------------
@@ -160,6 +244,7 @@ public class ExceptionUtilsTest extends TestCase {
         assertEquals(2, ExceptionUtils.getThrowableCount(nested));
         assertEquals(3, ExceptionUtils.getThrowableCount(withCause));
         assertEquals(1, ExceptionUtils.getThrowableCount(jdkNoCause));
+        assertEquals(1, ExceptionUtils.getThrowableCount(selfCause));
         assertEquals(3, ExceptionUtils.getThrowableCount(cyclicCause));
     }
 
@@ -195,6 +280,12 @@ public class ExceptionUtilsTest extends TestCase {
         assertSame(jdkNoCause, throwables[0]);
     }
 
+    public void testGetThrowables_Throwable_selfCause() {
+        Throwable[] throwables = ExceptionUtils.getThrowables(selfCause);
+        assertEquals(1, throwables.length);
+        assertSame(selfCause, throwables[0]);
+    }
+
     public void testGetThrowables_Throwable_recursiveCause() {
         Throwable[] throwables = ExceptionUtils.getThrowables(cyclicCause);
         assertEquals(3, throwables.length);
@@ -205,25 +296,25 @@ public class ExceptionUtilsTest extends TestCase {
 
     //-----------------------------------------------------------------------
     public void testGetThrowableList_Throwable_null() {
-        List<?> throwables = ExceptionUtils.getThrowableList(null);
+        List throwables = ExceptionUtils.getThrowableList(null);
         assertEquals(0, throwables.size());
     }
 
     public void testGetThrowableList_Throwable_withoutCause() {
-        List<?> throwables = ExceptionUtils.getThrowableList(withoutCause);
+        List throwables = ExceptionUtils.getThrowableList(withoutCause);
         assertEquals(1, throwables.size());
         assertSame(withoutCause, throwables.get(0));
     }
 
     public void testGetThrowableList_Throwable_nested() {
-        List<?> throwables = ExceptionUtils.getThrowableList(nested);
+        List throwables = ExceptionUtils.getThrowableList(nested);
         assertEquals(2, throwables.size());
         assertSame(nested, throwables.get(0));
         assertSame(withoutCause, throwables.get(1));
     }
 
     public void testGetThrowableList_Throwable_withCause() {
-        List<?> throwables = ExceptionUtils.getThrowableList(withCause);
+        List throwables = ExceptionUtils.getThrowableList(withCause);
         assertEquals(3, throwables.size());
         assertSame(withCause, throwables.get(0));
         assertSame(nested, throwables.get(1));
@@ -231,13 +322,19 @@ public class ExceptionUtilsTest extends TestCase {
     }
 
     public void testGetThrowableList_Throwable_jdkNoCause() {
-        List<?> throwables = ExceptionUtils.getThrowableList(jdkNoCause);
+        List throwables = ExceptionUtils.getThrowableList(jdkNoCause);
         assertEquals(1, throwables.size());
         assertSame(jdkNoCause, throwables.get(0));
     }
 
+    public void testGetThrowableList_Throwable_selfCause() {
+        List throwables = ExceptionUtils.getThrowableList(selfCause);
+        assertEquals(1, throwables.size());
+        assertSame(selfCause, throwables.get(0));
+    }
+
     public void testGetThrowableList_Throwable_recursiveCause() {
-        List<?> throwables = ExceptionUtils.getThrowableList(cyclicCause);
+        List throwables = ExceptionUtils.getThrowableList(cyclicCause);
         assertEquals(3, throwables.size());
         assertSame(cyclicCause, throwables.get(0));
         assertSame(cyclicCause.getCause(), throwables.get(1));
@@ -408,8 +505,8 @@ public class ExceptionUtilsTest extends TestCase {
         Throwable withCause = createExceptionWithCause();
         String[] stackTrace = ExceptionUtils.getRootCauseStackTrace(withCause);
         boolean match = false;
-        for (String element : stackTrace) {
-            if (element.startsWith(ExceptionUtils.WRAPPED_MARKER)) {
+        for (int i = 0; i < stackTrace.length; i++) {
+            if (stackTrace[i].startsWith(ExceptionUtils.WRAPPED_MARKER)) {
                 match = true;
                 break;
             }
@@ -418,8 +515,8 @@ public class ExceptionUtilsTest extends TestCase {
         
         stackTrace = ExceptionUtils.getRootCauseStackTrace(withoutCause);
         match = false;
-        for (String element : stackTrace) {
-            if (element.startsWith(ExceptionUtils.WRAPPED_MARKER)) {
+        for (int i = 0; i < stackTrace.length; i++) {
+            if (stackTrace[i].startsWith(ExceptionUtils.WRAPPED_MARKER)) {
                 match = true;
                 break;
             }
@@ -476,7 +573,6 @@ public class ExceptionUtilsTest extends TestCase {
             setCause(cause);
         }
 
-        @Override
         public Throwable getCause() {
             return cause;
         }
@@ -492,17 +588,8 @@ public class ExceptionUtilsTest extends TestCase {
      * return value of <code>Throwable</code>.
      */
     private static class ExceptionWithoutCause extends Exception {
-        @SuppressWarnings("unused")
         public void getTargetException() {
         }
-    }
-
-    // Temporary classes to allow the nested exception code to be removed 
-    // prior to a rewrite of this test class. 
-    private static class NestableException extends Exception { 
-        @SuppressWarnings("unused")
-        public NestableException() { super(); }
-        public NestableException(Throwable t) { super(t); }
     }
 
 }

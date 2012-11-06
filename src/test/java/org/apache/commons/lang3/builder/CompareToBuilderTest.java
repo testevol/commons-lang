@@ -23,7 +23,9 @@ import junit.framework.TestCase;
 /**
  * Unit tests {@link org.apache.commons.lang3.builder.CompareToBuilder}.
  *
- * @version $Id: CompareToBuilderTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @author <a href="mailto:sdowney@panix.com">Steve Downey</a>
+ * @version $Id: CompareToBuilderTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class CompareToBuilderTest extends TestCase {
 
@@ -33,12 +35,11 @@ public class CompareToBuilderTest extends TestCase {
 
     //-----------------------------------------------------------------------
 
-    static class TestObject implements Comparable<TestObject> {
+    static class TestObject implements Comparable {
         private int a;
         public TestObject(int a) {
             this.a = a;
         }
-        @Override
         public boolean equals(Object o) {
             if (o == this) {
                 return true;
@@ -57,7 +58,8 @@ public class CompareToBuilderTest extends TestCase {
         public int getA() {
             return a;
         }
-        public int compareTo(TestObject rhs) {
+        public int compareTo(Object o) {
+            TestObject rhs = (TestObject) o;
             return (a < rhs.a) ? -1 : (a > rhs.a) ? +1 : 0;
         }
     }
@@ -71,7 +73,6 @@ public class CompareToBuilderTest extends TestCase {
             super(a);
             this.b = b;
         }
-        @Override
         public boolean equals(Object o) {
             if (o == this) {
                 return true;
@@ -85,7 +86,6 @@ public class CompareToBuilderTest extends TestCase {
     }
 
     static class TestTransientSubObject extends TestObject {
-        @SuppressWarnings("unused")
         private transient int t;
         public TestTransientSubObject(int a, int t) {
             super(a);
@@ -269,20 +269,6 @@ public class CompareToBuilderTest extends TestCase {
         assertTrue(new CompareToBuilder().append(o1, null).toComparison() > 0);
         assertTrue(new CompareToBuilder().append((Object) null, (Object) null).toComparison() == 0);
         assertTrue(new CompareToBuilder().append(null, o1).toComparison() < 0);
-    }
-    
-    public void testObjectBuild() {
-        TestObject o1 = new TestObject(4);
-        TestObject o2 = new TestObject(4);
-        assertTrue(new CompareToBuilder().append(o1, o1).build() == 0);
-        assertTrue(new CompareToBuilder().append(o1, o2).build() == 0);
-        o2.setA(5);
-        assertTrue(new CompareToBuilder().append(o1, o2).build() < 0);
-        assertTrue(new CompareToBuilder().append(o2, o1).build() > 0);
-        
-        assertTrue(new CompareToBuilder().append(o1, null).build() > 0);
-        assertTrue(new CompareToBuilder().append((Object) null, (Object) null).build() == 0);
-        assertTrue(new CompareToBuilder().append(null, o1).build() < 0);
     }
 
     public void testObjectEx2() {

@@ -24,7 +24,8 @@ import junit.framework.TestCase;
  * 
  * @since 2.2
  * @see MutableBoolean
- * @version $Id: MutableBooleanTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @version $Id: MutableBooleanTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class MutableBooleanTest extends TestCase {
 
@@ -45,6 +46,16 @@ public class MutableBooleanTest extends TestCase {
             mutBool.compareTo(null);
             fail();
         } catch (NullPointerException ex) {
+        }
+        try {
+            mutBool.compareTo(Boolean.FALSE);
+            fail();
+        } catch (ClassCastException ex) {
+        }
+        try {
+            mutBool.compareTo("false");
+            fail();
+        } catch (ClassCastException ex) {
         }
     }
 
@@ -108,6 +119,11 @@ public class MutableBooleanTest extends TestCase {
             mutBool.setValue(null);
             fail();
         } catch (NullPointerException ex) {
+        }
+        try {
+            mutBool.setValue("false");
+            fail();
+        } catch (ClassCastException ex) {
         }
     }
 

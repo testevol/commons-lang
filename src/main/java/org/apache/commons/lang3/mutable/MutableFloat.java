@@ -16,14 +16,17 @@
  */
 package org.apache.commons.lang3.mutable;
 
+import org.apache.commons.lang3.math.NumberUtils;
+
 /**
  * A mutable <code>float</code> wrapper.
  * 
  * @see Float
  * @since 2.1
- * @version $Id: MutableFloat.java 1096472 2011-04-25 13:28:06Z mbenson $
+ * @author Apache Software Foundation
+ * @version $Id: MutableFloat.java 1067685 2011-02-06 15:38:57Z niallp $
  */
-public class MutableFloat extends Number implements Comparable<MutableFloat>, Mutable<Number> {
+public class MutableFloat extends Number implements Comparable, Mutable {
 
     /**
      * Required for serialization support.
@@ -81,7 +84,7 @@ public class MutableFloat extends Number implements Comparable<MutableFloat>, Mu
      * 
      * @return the value as a Float, never null
      */
-    public Float getValue() {
+    public Object getValue() {
         return new Float(this.value);
     }
 
@@ -99,9 +102,10 @@ public class MutableFloat extends Number implements Comparable<MutableFloat>, Mu
      * 
      * @param value  the value to set, not null
      * @throws NullPointerException if the object is null
+     * @throws ClassCastException if the type is not a {@link Number}
      */
-    public void setValue(Number value) {
-        this.value = value.floatValue();
+    public void setValue(Object value) {
+        setValue(((Number) value).floatValue());
     }
 
     //-----------------------------------------------------------------------
@@ -186,13 +190,12 @@ public class MutableFloat extends Number implements Comparable<MutableFloat>, Mu
     }
 
     //-----------------------------------------------------------------------
-    // shortValue and byteValue rely on Number implementation
+    // shortValue and bytValue rely on Number implementation
     /**
      * Returns the value of this MutableFloat as an int.
      *
      * @return the numeric value represented by this object after conversion to type int.
      */
-    @Override
     public int intValue() {
         return (int) value;
     }
@@ -202,7 +205,6 @@ public class MutableFloat extends Number implements Comparable<MutableFloat>, Mu
      *
      * @return the numeric value represented by this object after conversion to type long.
      */
-    @Override
     public long longValue() {
         return (long) value;
     }
@@ -212,7 +214,6 @@ public class MutableFloat extends Number implements Comparable<MutableFloat>, Mu
      *
      * @return the numeric value represented by this object after conversion to type float.
      */
-    @Override
     public float floatValue() {
         return value;
     }
@@ -222,7 +223,6 @@ public class MutableFloat extends Number implements Comparable<MutableFloat>, Mu
      *
      * @return the numeric value represented by this object after conversion to type double.
      */
-    @Override
     public double doubleValue() {
         return value;
     }
@@ -234,7 +234,7 @@ public class MutableFloat extends Number implements Comparable<MutableFloat>, Mu
      * @return a Float instance containing the value from this mutable, never null
      */
     public Float toFloat() {
-        return Float.valueOf(floatValue());
+        return new Float(floatValue());
     }
 
     //-----------------------------------------------------------------------
@@ -269,7 +269,6 @@ public class MutableFloat extends Number implements Comparable<MutableFloat>, Mu
      * @return <code>true</code> if the objects are the same; <code>false</code> otherwise.
      * @see java.lang.Float#floatToIntBits(float)
      */
-    @Override
     public boolean equals(Object obj) {
         return (obj instanceof MutableFloat)
             && (Float.floatToIntBits(((MutableFloat) obj).value) == Float.floatToIntBits(value));
@@ -280,7 +279,6 @@ public class MutableFloat extends Number implements Comparable<MutableFloat>, Mu
      * 
      * @return a suitable hash code
      */
-    @Override
     public int hashCode() {
         return Float.floatToIntBits(value);
     }
@@ -289,12 +287,13 @@ public class MutableFloat extends Number implements Comparable<MutableFloat>, Mu
     /**
      * Compares this mutable to another in ascending order.
      * 
-     * @param other  the other mutable to compare to, not null
+     * @param obj the other mutable to compare to, not null
      * @return negative if this is less, zero if equal, positive if greater
      */
-    public int compareTo(MutableFloat other) {
+    public int compareTo(Object obj) {
+        MutableFloat other = (MutableFloat) obj;
         float anotherVal = other.value;
-        return Float.compare(value, anotherVal);
+        return NumberUtils.compare(value, anotherVal);
     }
 
     //-----------------------------------------------------------------------
@@ -303,7 +302,6 @@ public class MutableFloat extends Number implements Comparable<MutableFloat>, Mu
      * 
      * @return the mutable value as a string
      */
-    @Override
     public String toString() {
         return String.valueOf(value);
     }

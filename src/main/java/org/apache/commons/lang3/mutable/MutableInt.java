@@ -21,9 +21,10 @@ package org.apache.commons.lang3.mutable;
  * 
  * @see Integer
  * @since 2.1
- * @version $Id: MutableInt.java 1096472 2011-04-25 13:28:06Z mbenson $
+ * @author Apache Software Foundation
+ * @version $Id: MutableInt.java 1067685 2011-02-06 15:38:57Z niallp $
  */
-public class MutableInt extends Number implements Comparable<MutableInt>, Mutable<Number> {
+public class MutableInt extends Number implements Comparable, Mutable {
 
     /**
      * Required for serialization support.
@@ -81,7 +82,7 @@ public class MutableInt extends Number implements Comparable<MutableInt>, Mutabl
      * 
      * @return the value as a Integer, never null
      */
-    public Integer getValue() {
+    public Object getValue() {
         return new Integer(this.value);
     }
 
@@ -99,9 +100,10 @@ public class MutableInt extends Number implements Comparable<MutableInt>, Mutabl
      * 
      * @param value  the value to set, not null
      * @throws NullPointerException if the object is null
+     * @throws ClassCastException if the type is not a {@link Number}
      */
-    public void setValue(Number value) {
-        this.value = value.intValue();
+    public void setValue(Object value) {
+        setValue(((Number) value).intValue());
     }
 
     //-----------------------------------------------------------------------
@@ -167,13 +169,12 @@ public class MutableInt extends Number implements Comparable<MutableInt>, Mutabl
     }
 
     //-----------------------------------------------------------------------
-    // shortValue and byteValue rely on Number implementation
+    // shortValue and bytValue rely on Number implementation
     /**
      * Returns the value of this MutableInt as an int.
      *
      * @return the numeric value represented by this object after conversion to type int.
      */
-    @Override
     public int intValue() {
         return value;
     }
@@ -183,7 +184,6 @@ public class MutableInt extends Number implements Comparable<MutableInt>, Mutabl
      *
      * @return the numeric value represented by this object after conversion to type long.
      */
-    @Override
     public long longValue() {
         return value;
     }
@@ -193,7 +193,6 @@ public class MutableInt extends Number implements Comparable<MutableInt>, Mutabl
      *
      * @return the numeric value represented by this object after conversion to type float.
      */
-    @Override
     public float floatValue() {
         return value;
     }
@@ -203,7 +202,6 @@ public class MutableInt extends Number implements Comparable<MutableInt>, Mutabl
      *
      * @return the numeric value represented by this object after conversion to type double.
      */
-    @Override
     public double doubleValue() {
         return value;
     }
@@ -215,7 +213,7 @@ public class MutableInt extends Number implements Comparable<MutableInt>, Mutabl
      * @return a Integer instance containing the value from this mutable, never null
      */
     public Integer toInteger() {
-        return Integer.valueOf(intValue());
+        return new Integer(intValue());
     }
 
     //-----------------------------------------------------------------------
@@ -227,7 +225,6 @@ public class MutableInt extends Number implements Comparable<MutableInt>, Mutabl
      * @param obj  the object to compare with, null returns false
      * @return <code>true</code> if the objects are the same; <code>false</code> otherwise.
      */
-    @Override
     public boolean equals(Object obj) {
         if (obj instanceof MutableInt) {
             return value == ((MutableInt) obj).intValue();
@@ -240,7 +237,6 @@ public class MutableInt extends Number implements Comparable<MutableInt>, Mutabl
      * 
      * @return a suitable hash code
      */
-    @Override
     public int hashCode() {
         return value;
     }
@@ -249,10 +245,12 @@ public class MutableInt extends Number implements Comparable<MutableInt>, Mutabl
     /**
      * Compares this mutable to another in ascending order.
      * 
-     * @param other  the other mutable to compare to, not null
+     * @param obj the other mutable to compare to, not null
      * @return negative if this is less, zero if equal, positive if greater
+     * @throws ClassCastException if the argument is not a MutableInt
      */
-    public int compareTo(MutableInt other) {
+    public int compareTo(Object obj) {
+        MutableInt other = (MutableInt) obj;
         int anotherVal = other.value;
         return value < anotherVal ? -1 : (value == anotherVal ? 0 : 1);
     }
@@ -263,7 +261,6 @@ public class MutableInt extends Number implements Comparable<MutableInt>, Mutabl
      * 
      * @return the mutable value as a string
      */
-    @Override
     public String toString() {
         return String.valueOf(value);
     }

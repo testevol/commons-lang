@@ -26,7 +26,9 @@ import java.text.ParsePosition;
  * example of use for this would be a webapp where data is taken in one way and
  * stored in a database another way.
  * 
- * @version $Id: CompositeFormat.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @author Archimedes Trajano
+ * @version $Id: CompositeFormat.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class CompositeFormat extends Format {
 
@@ -63,7 +65,6 @@ public class CompositeFormat extends Format {
      * @return <code>toAppendTo</code>
      * @see Format#format(Object, StringBuffer, FieldPosition)
      */
-    @Override
     public StringBuffer format(Object obj, StringBuffer toAppendTo,
             FieldPosition pos) {
         return formatter.format(obj, toAppendTo, pos);
@@ -79,7 +80,6 @@ public class CompositeFormat extends Format {
      * @return the parsed Object
      * @see Format#parseObject(String, ParsePosition)
      */
-    @Override
     public Object parseObject(String source, ParsePosition pos) {
         return parser.parseObject(source, pos);
     }

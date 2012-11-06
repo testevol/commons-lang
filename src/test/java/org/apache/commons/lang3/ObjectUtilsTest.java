@@ -18,21 +18,24 @@ package org.apache.commons.lang3;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.exception.CloneFailedException;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 /**
  * Unit tests {@link org.apache.commons.lang3.ObjectUtils}.
  *
- * @version $Id: ObjectUtilsTest.java 1091448 2011-04-12 15:13:36Z scolebourne $
+ * @author Apache Software Foundation
+ * @author <a href="mailto:jmcnally@collab.net">John McNally</a>
+ * @author <a href="mailto:ridesmet@users.sourceforge.net">Ringo De Smet</a>
+ * @author <a href="mailto:ggregory@seagullsw.com">Gary Gregory</a>
+ * @version $Id: ObjectUtilsTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class ObjectUtilsTest extends TestCase {
     private static final String FOO = "foo";
@@ -45,13 +48,13 @@ public class ObjectUtilsTest extends TestCase {
     //-----------------------------------------------------------------------
     public void testConstructor() {
         assertNotNull(new ObjectUtils());
-        Constructor<?>[] cons = ObjectUtils.class.getDeclaredConstructors();
+        Constructor[] cons = ObjectUtils.class.getDeclaredConstructors();
         assertEquals(1, cons.length);
         assertEquals(true, Modifier.isPublic(cons[0].getModifiers()));
         assertEquals(true, Modifier.isPublic(ObjectUtils.class.getModifiers()));
         assertEquals(false, Modifier.isFinal(ObjectUtils.class.getModifiers()));
     }
-
+    
     //-----------------------------------------------------------------------
     public void testIsNull() {
         Object o = FOO;
@@ -60,24 +63,6 @@ public class ObjectUtilsTest extends TestCase {
         assertSame("dflt was returned when o was not null", o, ObjectUtils.defaultIfNull(o, dflt));
     }
 
-    public void testFirstNonNull() {
-        assertEquals(null, ObjectUtils.firstNonNull(null, null));
-        assertEquals("", ObjectUtils.firstNonNull(null, ""));
-        String firstNonNullGenerics = ObjectUtils.firstNonNull(null, null, "123", "456");
-        assertEquals("123", firstNonNullGenerics);
-        assertEquals("123", ObjectUtils.firstNonNull("123", null, "456", null));
-        assertEquals(null, ObjectUtils.firstNonNull());
-        assertSame(Boolean.TRUE, ObjectUtils.firstNonNull(Boolean.TRUE));
-        assertNull(ObjectUtils.firstNonNull());
-        assertNull(ObjectUtils.firstNonNull(null, null));
-//        assertSame("123", ObjectUtils.firstNonNull(null, ObjectUtils.NULL, "123", "456"));
-//        assertSame("456", ObjectUtils.firstNonNull(ObjectUtils.NULL, "456", "123", null));
-//        assertNull(ObjectUtils.firstNonNull(null, null, ObjectUtils.NULL));
-        assertNull(ObjectUtils.firstNonNull((Object) null));
-        assertNull(ObjectUtils.firstNonNull((Object[]) null));
-    }
-
-    //-----------------------------------------------------------------------
     public void testEquals() {
         assertTrue("ObjectUtils.equals(null, null) returned false", ObjectUtils.equals(null, null));
         assertTrue("ObjectUtils.equals(\"foo\", null) returned true", !ObjectUtils.equals(FOO, null));
@@ -97,30 +82,6 @@ public class ObjectUtilsTest extends TestCase {
     public void testHashCode() {
         assertEquals(0, ObjectUtils.hashCode(null));
         assertEquals("a".hashCode(), ObjectUtils.hashCode("a"));
-    }
-
-    public void testHashCodeMulti_multiple_emptyArray() {
-        Object[] array = new Object[0];
-        assertEquals(1, ObjectUtils.hashCodeMulti(array));
-    }
-
-    public void testHashCodeMulti_multiple_nullArray() {
-        Object[] array = null;
-        assertEquals(1, ObjectUtils.hashCodeMulti(array));
-    }
-
-    public void testHashCodeMulti_multiple_likeList() {
-        List<Object> list0 = new ArrayList<Object>(Arrays.asList());
-        assertEquals(list0.hashCode(), ObjectUtils.hashCodeMulti());
-        
-        List<Object> list1 = new ArrayList<Object>(Arrays.asList("a"));
-        assertEquals(list1.hashCode(), ObjectUtils.hashCodeMulti("a"));
-        
-        List<Object> list2 = new ArrayList<Object>(Arrays.asList("a", "b"));
-        assertEquals(list2.hashCode(), ObjectUtils.hashCodeMulti("a", "b"));
-        
-        List<Object> list3 = new ArrayList<Object>(Arrays.asList("a", "b", "c"));
-        assertEquals(list3.hashCode(), ObjectUtils.hashCodeMulti("a", "b", "c"));
     }
 
 //    /**
@@ -188,6 +149,24 @@ public class ObjectUtilsTest extends TestCase {
         }
     }
 
+    public void testAppendIdentityToString() {
+        assertEquals(null, ObjectUtils.appendIdentityToString(null, null));
+        assertEquals(null, ObjectUtils.appendIdentityToString(new StringBuffer(), null));
+        assertEquals(
+            "java.lang.String@" + Integer.toHexString(System.identityHashCode(FOO)),
+            ObjectUtils.appendIdentityToString(null, FOO).toString());
+        assertEquals(
+            "java.lang.String@" + Integer.toHexString(System.identityHashCode(FOO)),
+            ObjectUtils.appendIdentityToString(new StringBuffer(), FOO).toString());
+        Integer val = new Integer(90);
+        assertEquals(
+            "java.lang.Integer@" + Integer.toHexString(System.identityHashCode(val)),
+            ObjectUtils.appendIdentityToString(null, val).toString());
+        assertEquals(
+            "java.lang.Integer@" + Integer.toHexString(System.identityHashCode(val)),
+            ObjectUtils.appendIdentityToString(new StringBuffer(), val).toString());
+    }
+
     public void testToString_Object() {
         assertEquals("", ObjectUtils.toString((Object) null) );
         assertEquals(Boolean.TRUE.toString(), ObjectUtils.toString(Boolean.TRUE) );
@@ -199,7 +178,7 @@ public class ObjectUtilsTest extends TestCase {
     }
 
     public void testNull() {
-        assertNotNull(ObjectUtils.NULL);
+        assertTrue(ObjectUtils.NULL != null);
         assertTrue(ObjectUtils.NULL instanceof ObjectUtils.Null);
         assertSame(ObjectUtils.NULL, SerializationUtils.clone(ObjectUtils.NULL));
     }
@@ -208,60 +187,44 @@ public class ObjectUtilsTest extends TestCase {
     
     public void testMax() {
         Calendar calendar = Calendar.getInstance();
-        Date nonNullComparable1 = calendar.getTime();
-        Date nonNullComparable2 = calendar.getTime();
-        String[] nullAray = null;
+        Comparable nonNullComparable1 = calendar.getTime();
+        Comparable nonNullComparable2 = calendar.getTime();
         
         calendar.set( Calendar.YEAR, calendar.get( Calendar.YEAR ) -1 );
-        Date minComparable = calendar.getTime();
+        Comparable minComparable = calendar.getTime();
         
         assertNotSame( nonNullComparable1, nonNullComparable2 );
         
-        assertNull(ObjectUtils.max( (String) null ) );
-        assertNull(ObjectUtils.max( nullAray ) );
         assertSame( nonNullComparable1, ObjectUtils.max( null, nonNullComparable1 ) );
         assertSame( nonNullComparable1, ObjectUtils.max( nonNullComparable1, null ) );
-        assertSame( nonNullComparable1, ObjectUtils.max( null, nonNullComparable1, null ) );
         assertSame( nonNullComparable1, ObjectUtils.max( nonNullComparable1, nonNullComparable2 ) );
-        assertSame( nonNullComparable2, ObjectUtils.max( nonNullComparable2, nonNullComparable1 ) );
         assertSame( nonNullComparable1, ObjectUtils.max( nonNullComparable1, minComparable ) );
         assertSame( nonNullComparable1, ObjectUtils.max( minComparable, nonNullComparable1 ) );
-        assertSame( nonNullComparable1, ObjectUtils.max( null, minComparable, null, nonNullComparable1 ) );
-
-        assertNull( ObjectUtils.max((String)null, (String)null) );
     }
     
     public void testMin() {
         Calendar calendar = Calendar.getInstance();
-        Date nonNullComparable1 = calendar.getTime();
-        Date nonNullComparable2 = calendar.getTime();
-        String[] nullAray = null;
+        Comparable nonNullComparable1 = calendar.getTime();
+        Comparable nonNullComparable2 = calendar.getTime();
         
         calendar.set( Calendar.YEAR, calendar.get( Calendar.YEAR ) -1 );
-        Date minComparable = calendar.getTime();
+        Comparable minComparable = calendar.getTime();
         
         assertNotSame( nonNullComparable1, nonNullComparable2 );
         
-        assertNull(ObjectUtils.min( (String) null ) );
-        assertNull(ObjectUtils.min( nullAray ) );
         assertSame( nonNullComparable1, ObjectUtils.min( null, nonNullComparable1 ) );
         assertSame( nonNullComparable1, ObjectUtils.min( nonNullComparable1, null ) );
-        assertSame( nonNullComparable1, ObjectUtils.min( null, nonNullComparable1, null ) );
         assertSame( nonNullComparable1, ObjectUtils.min( nonNullComparable1, nonNullComparable2 ) );
-        assertSame( nonNullComparable2, ObjectUtils.min( nonNullComparable2, nonNullComparable1 ) );
         assertSame( minComparable, ObjectUtils.min( nonNullComparable1, minComparable ) );
         assertSame( minComparable, ObjectUtils.min( minComparable, nonNullComparable1 ) );
-        assertSame( minComparable, ObjectUtils.min( null, nonNullComparable1, null, minComparable ) );
-
-        assertNull( ObjectUtils.min((String)null, (String)null) );
     }
 
     /**
      * Tests {@link ObjectUtils#compare(Comparable, Comparable, boolean)}.
      */
     public void testCompare() {
-        Integer one = Integer.valueOf(1);
-        Integer two = Integer.valueOf(2);
+        Integer one = new Integer(1);
+        Integer two = new Integer(2);
         Integer nullValue = null;
 
         assertEquals("Null Null false", 0, ObjectUtils.compare(nullValue, nullValue));
@@ -282,7 +245,7 @@ public class ObjectUtilsTest extends TestCase {
      */
     public void testCloneOfCloneable() {
         final CloneableString string = new CloneableString("apache");
-        final CloneableString stringClone = ObjectUtils.clone(string);
+        final CloneableString stringClone = (CloneableString)ObjectUtils.clone(string);
         assertEquals("apache", stringClone.getValue());
     }
 
@@ -303,7 +266,7 @@ public class ObjectUtilsTest extends TestCase {
             ObjectUtils.clone(string);
             fail("Thrown " + CloneFailedException.class.getName() + " expected");
         } catch (final CloneFailedException e) {
-            assertEquals(NoSuchMethodException.class, e.getCause().getClass());
+            //expected result
         }
     }
 
@@ -311,15 +274,15 @@ public class ObjectUtilsTest extends TestCase {
      * Tests {@link ObjectUtils#clone(Object)} with an object array.
      */
     public void testCloneOfStringArray() {
-        assertTrue(Arrays.deepEquals(
-            new String[]{"string"}, ObjectUtils.clone(new String[]{"string"})));
+        assertTrue(Arrays.equals(
+            new String[]{"string"}, (String[])ObjectUtils.clone(new String[]{"string"})));
     }
 
     /**
      * Tests {@link ObjectUtils#clone(Object)} with an array of primitives.
      */
     public void testCloneOfPrimitiveArray() {
-        assertTrue(Arrays.equals(new int[]{1}, ObjectUtils.clone(new int[]{1})));
+        assertTrue(Arrays.equals(new int[]{1}, (int[])ObjectUtils.clone(new int[]{1})));
     }
 
     /**
@@ -327,7 +290,7 @@ public class ObjectUtilsTest extends TestCase {
      */
     public void testPossibleCloneOfCloneable() {
         final CloneableString string = new CloneableString("apache");
-        final CloneableString stringClone = ObjectUtils.cloneIfPossible(string);
+        final CloneableString stringClone = (CloneableString)ObjectUtils.cloneIfPossible(string);
         assertEquals("apache", stringClone.getValue());
     }
 
@@ -348,21 +311,20 @@ public class ObjectUtilsTest extends TestCase {
             ObjectUtils.cloneIfPossible(string);
             fail("Thrown " + CloneFailedException.class.getName() + " expected");
         } catch (final CloneFailedException e) {
-            assertEquals(NoSuchMethodException.class, e.getCause().getClass());
+            //expected result
         }
     }
 
     /**
      * String that is cloneable.
      */
-    static final class CloneableString extends MutableObject<String> implements Cloneable {
+    static final class CloneableString extends MutableObject implements Cloneable {
         private static final long serialVersionUID = 1L;
         CloneableString(final String s) {
             super(s);
         }
 
-        @Override
-        public CloneableString clone() throws CloneNotSupportedException {
+        public Object clone() throws CloneNotSupportedException {
             return (CloneableString)super.clone();
         }
     }
@@ -370,7 +332,7 @@ public class ObjectUtilsTest extends TestCase {
     /**
      * String that is not cloneable.
      */
-    static final class UncloneableString extends MutableObject<String> implements Cloneable {
+    static final class UncloneableString extends MutableObject implements Cloneable {
         private static final long serialVersionUID = 1L;
         UncloneableString(final String s) {
             super(s);

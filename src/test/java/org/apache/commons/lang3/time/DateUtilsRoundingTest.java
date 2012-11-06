@@ -34,9 +34,11 @@ import junit.framework.TestCase;
  * A month with 29 or 30 days will be rounded up from the 16th
  * A month with 31 days will be rounded up from the 17th
  * 
+ * @author Robert Scholte
  * @since 3.0
- * @version $Id: DateUtilsRoundingTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ *
  */
+// TODO: Add DateUtils.ceil()-tests if method is available
 public class DateUtilsRoundingTest extends TestCase {
 
     DateFormat dateTimeParser;
@@ -53,7 +55,6 @@ public class DateUtilsRoundingTest extends TestCase {
     Calendar januaryOneCalendar;
     FastDateFormat fdf = DateFormatUtils.ISO_DATETIME_FORMAT;
 
-    @Override
     protected void setUp() throws Exception {
         super.setUp();
         dateTimeParser = new SimpleDateFormat("MMM dd, yyyy H:mm:ss.SSS", Locale.ENGLISH);
@@ -251,7 +252,7 @@ public class DateUtilsRoundingTest extends TestCase {
      * Includes rounding to January 1
      * 
      * @throws Exception
-     * @since 3.0
+     * @3.0
      */
     public void testRoundAmPm() throws Exception {
         final int calendarField = Calendar.AM_PM;

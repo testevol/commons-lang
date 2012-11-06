@@ -16,8 +16,6 @@
  */
 package org.apache.commons.lang3.time;
 
-import static org.apache.commons.lang3.JavaVersion.JAVA_1_4;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.text.DateFormat;
@@ -39,6 +37,8 @@ import org.apache.commons.lang3.SystemUtils;
 /**
  * Unit tests {@link org.apache.commons.lang3.time.DateUtils}.
  *
+ * @author <a href="mailto:sergek@lokitech.com">Serge Knystautas</a>
+ * @author <a href="mailto:steve@mungoknotwise.com">Steven Caswell</a>
  */
 public class DateUtilsTest extends TestCase {
 
@@ -83,8 +83,8 @@ public class DateUtilsTest extends TestCase {
     public DateUtilsTest(String name) {
         super(name);
     }
-    
-    @Override
+
+
     protected void setUp() throws Exception {
         super.setUp();
 
@@ -141,7 +141,7 @@ public class DateUtilsTest extends TestCase {
     //-----------------------------------------------------------------------
     public void testConstructor() {
         assertNotNull(new DateUtils());
-        Constructor<?>[] cons = DateUtils.class.getDeclaredConstructors();
+        Constructor[] cons = DateUtils.class.getDeclaredConstructors();
         assertEquals(1, cons.length);
         assertEquals(true, Modifier.isPublic(cons[0].getModifiers()));
         assertEquals(true, Modifier.isPublic(DateUtils.class.getModifiers()));
@@ -226,14 +226,6 @@ public class DateUtilsTest extends TestCase {
         cal2.set(2004, 6, 9, 13, 45, 0);
         cal2.set(Calendar.MILLISECOND, 0);
         assertEquals(true, DateUtils.isSameLocalTime(cal1, cal2));
-
-        Calendar cal3 = Calendar.getInstance();
-        Calendar cal4 = Calendar.getInstance();
-        cal3.set(2004, 6, 9, 4,  0, 0);
-        cal4.set(2004, 6, 9, 16, 0, 0);
-        cal3.set(Calendar.MILLISECOND, 0);
-        cal4.set(Calendar.MILLISECOND, 0);
-        assertFalse("LANG-677", DateUtils.isSameLocalTime(cal3, cal4));
         
         cal2.set(2004, 6, 9, 11, 45, 0);
         assertEquals(false, DateUtils.isSameLocalTime(cal1, cal2));
@@ -272,7 +264,7 @@ public class DateUtilsTest extends TestCase {
             fail();
         } catch (IllegalArgumentException ex) {}
         try {
-            DateUtils.parseDate(dateStr, (String[]) null);
+            DateUtils.parseDate(dateStr, null);
             fail();
         } catch (IllegalArgumentException ex) {}
         try {
@@ -447,6 +439,25 @@ public class DateUtilsTest extends TestCase {
         assertDate(result, 2000, 6, 5, 4, 3, 2, 0);
     }
 
+    //-----------------------------------------------------------------------
+    public void testAddByField() throws Exception {
+        Date base = new Date(MILLIS_TEST);
+        Date result = DateUtils.add(base, Calendar.YEAR, 0);
+        assertNotSame(base, result);
+        assertDate(base, 2000, 6, 5, 4, 3, 2, 1);
+        assertDate(result, 2000, 6, 5, 4, 3, 2, 1);
+        
+        result = DateUtils.add(base, Calendar.YEAR, 1);
+        assertNotSame(base, result);
+        assertDate(base, 2000, 6, 5, 4, 3, 2, 1);
+        assertDate(result, 2001, 6, 5, 4, 3, 2, 1);
+        
+        result = DateUtils.add(base, Calendar.YEAR, -1);
+        assertNotSame(base, result);
+        assertDate(base, 2000, 6, 5, 4, 3, 2, 1);
+        assertDate(result, 1999, 6, 5, 4, 3, 2, 1);
+    }
+    
     // -----------------------------------------------------------------------
     public void testSetYears() throws Exception {
         Date base = new Date(MILLIS_TEST);
@@ -813,7 +824,7 @@ public class DateUtilsTest extends TestCase {
         assertEquals("round MET date across DST change-over",
                 dateTimeParser.parse("March 30, 2003 01:00:00.000"),
                 DateUtils.round((Object) cal4, Calendar.HOUR_OF_DAY));
-        if (SystemUtils.isJavaVersionAtLeast(JAVA_1_4)) {
+        if (SystemUtils.isJavaVersionAtLeast(1.4f)) {
             assertEquals("round MET date across DST change-over",
                     dateTimeParser.parse("March 30, 2003 03:00:00.000"),
                     DateUtils.round(date5, Calendar.HOUR_OF_DAY));
@@ -833,7 +844,7 @@ public class DateUtilsTest extends TestCase {
                     dateTimeParser.parse("March 30, 2003 04:00:00.000"),
                     DateUtils.round((Object) cal7, Calendar.HOUR_OF_DAY));
         } else {
-            this.warn("WARNING: Some date rounding tests not run since the current version is " + SystemUtils.JAVA_SPECIFICATION_VERSION);
+            this.warn("WARNING: Some date rounding tests not run since the current version is " + SystemUtils.JAVA_VERSION);
         }
         TimeZone.setDefault(defaultZone);
         dateTimeParser.setTimeZone(defaultZone);
@@ -1099,8 +1110,8 @@ public class DateUtilsTest extends TestCase {
      * see http://issues.apache.org/jira/browse/LANG-59
      */
     public void testTruncateLang59() throws Exception {
-        if (!SystemUtils.isJavaVersionAtLeast(JAVA_1_4)) {
-            this.warn("WARNING: Test for LANG-59 not run since the current version is " + SystemUtils.JAVA_SPECIFICATION_VERSION);
+        if (!SystemUtils.isJavaVersionAtLeast(1.4f)) {
+            this.warn("WARNING: Test for LANG-59 not run since the current version is " + SystemUtils.JAVA_VERSION);
             return;
         }
 
@@ -1174,29 +1185,21 @@ public class DateUtilsTest extends TestCase {
 
     // http://issues.apache.org/jira/browse/LANG-530
     public void testLang530() throws ParseException {
-        Date d = new Date();
-        String isoDateStr = DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(d);
-        Date d2 = DateUtils.parseDate(isoDateStr, new String[] { DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.getPattern() });
-        // the format loses milliseconds so have to reintroduce them
-        assertEquals("Date not equal to itself ISO formatted and parsed", d.getTime(), d2.getTime() + d.getTime() % 1000); 
+        if (SystemUtils.isJavaVersionAtLeast(1.4f)) {
+            Date d = new Date();
+            String isoDateStr = DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.format(d);
+            Date d2 = DateUtils.parseDate(isoDateStr, new String[] { DateFormatUtils.ISO_DATETIME_TIME_ZONE_FORMAT.getPattern() });
+            // the format loses milliseconds so have to reintroduce them
+            assertEquals("Date not equal to itself ISO formatted and parsed", d.getTime(), d2.getTime() + d.getTime() % 1000);
+        } else {
+            this.warn("WARNING: Cannot test SimpleDateFormat with 'Z' since the current version is " + SystemUtils.JAVA_VERSION);
+        }
     }
     
     /**
      * Tests various values with the ceiling method
      */
     public void testCeil() throws Exception {
-        // test javadoc
-        assertEquals("ceiling javadoc-1 failed",
-                dateTimeParser.parse("March 28, 2002 14:00:00.000"),
-                DateUtils.ceiling(
-                    dateTimeParser.parse("March 28, 2002 13:45:01.231"),
-                Calendar.HOUR));
-        assertEquals("ceiling javadoc-2 failed",
-                dateTimeParser.parse("April 1, 2002 00:00:00.000"),
-                DateUtils.ceiling(
-                    dateTimeParser.parse("March 28, 2002 13:45:01.231"),
-                Calendar.MONTH));
-
         // tests public static Date ceiling(Date date, int field)
         assertEquals("ceiling year-1 failed",
                 dateParser.parse("January 1, 2003"),
@@ -1352,6 +1355,7 @@ public class DateUtilsTest extends TestCase {
 
         
         // Fix for http://issues.apache.org/bugzilla/show_bug.cgi?id=25560
+        // == https://issues.apache.org/jira/browse/LANG-13
         // Test ceiling across the beginning of daylight saving time
         TimeZone.setDefault(zone);
         dateTimeParser.setTimeZone(zone);
@@ -1381,13 +1385,13 @@ public class DateUtilsTest extends TestCase {
                 dateTimeParser.parse("March 31, 2003 00:00:00.000"),
                 DateUtils.ceiling((Object) cal7, Calendar.DATE));
         
-        assertEquals("ceiling MET date across DST change-over",
-                dateTimeParser.parse("March 30, 2003 03:00:00.000"),
-                DateUtils.ceiling(date4, Calendar.HOUR_OF_DAY));
-        assertEquals("ceiling MET date across DST change-over",
-                dateTimeParser.parse("March 30, 2003 03:00:00.000"),
-                DateUtils.ceiling((Object) cal4, Calendar.HOUR_OF_DAY));
-        if (SystemUtils.isJavaVersionAtLeast(JAVA_1_4)) {
+        if (SystemUtils.isJavaVersionAtLeast(1.4f)) {
+            assertEquals("ceiling MET date across DST change-over",
+                    dateTimeParser.parse("March 30, 2003 03:00:00.000"),
+                    DateUtils.ceiling(date4, Calendar.HOUR_OF_DAY));
+            assertEquals("ceiling MET date across DST change-over",
+                    dateTimeParser.parse("March 30, 2003 03:00:00.000"),
+                    DateUtils.ceiling((Object) cal4, Calendar.HOUR_OF_DAY));
             assertEquals("ceiling MET date across DST change-over",
                     dateTimeParser.parse("March 30, 2003 03:00:00.000"),
                     DateUtils.ceiling(date5, Calendar.HOUR_OF_DAY));
@@ -1407,7 +1411,7 @@ public class DateUtilsTest extends TestCase {
                     dateTimeParser.parse("March 30, 2003 04:00:00.000"),
                     DateUtils.ceiling((Object) cal7, Calendar.HOUR_OF_DAY));
         } else {
-            this.warn("WARNING: Some date ceiling tests not run since the current version is " + SystemUtils.JAVA_SPECIFICATION_VERSION);
+            this.warn("WARNING: Some date ceiling tests not run since the current version is " + SystemUtils.JAVA_VERSION);
         }
         TimeZone.setDefault(defaultZone);
         dateTimeParser.setTimeZone(defaultZone);
@@ -1474,7 +1478,7 @@ public class DateUtilsTest extends TestCase {
             Calendar centered = DateUtils.truncate(now, Calendar.DATE);
             centered.add(Calendar.DATE, -3);
             
-            Iterator<?> it = DateUtils.iterator(now, DateUtils.RANGE_WEEK_SUNDAY);
+            Iterator it = DateUtils.iterator(now, DateUtils.RANGE_WEEK_SUNDAY);
             assertWeekIterator(it, sunday);
             it = DateUtils.iterator(now, DateUtils.RANGE_WEEK_MONDAY);
             assertWeekIterator(it, monday);
@@ -1505,7 +1509,7 @@ public class DateUtilsTest extends TestCase {
      * Tests the calendar iterator for month-based ranges
      */
     public void testMonthIterator() throws Exception {
-        Iterator<?> it = DateUtils.iterator(date1, DateUtils.RANGE_MONTH_SUNDAY);
+        Iterator it = DateUtils.iterator(date1, DateUtils.RANGE_MONTH_SUNDAY);
         assertWeekIterator(it,
                 dateParser.parse("January 27, 2002"),
                 dateParser.parse("March 2, 2002"));
@@ -1530,7 +1534,7 @@ public class DateUtilsTest extends TestCase {
      * This checks that this is a 7 element iterator of Calendar objects
      * that are dates (no time), and exactly 1 day spaced after each other.
      */
-    private static void assertWeekIterator(Iterator<?> it, Calendar start) {
+    private static void assertWeekIterator(Iterator it, Calendar start) {
         Calendar end = (Calendar) start.clone();
         end.add(Calendar.DATE, 6);
 
@@ -1540,7 +1544,7 @@ public class DateUtilsTest extends TestCase {
     /**
      * Convenience method for when working with Date objects
      */
-    private static void assertWeekIterator(Iterator<?> it, Date start, Date end) {
+    private static void assertWeekIterator(Iterator it, Date start, Date end) {
         Calendar calStart = Calendar.getInstance();
         calStart.setTime(start);
         Calendar calEnd = Calendar.getInstance();
@@ -1554,7 +1558,7 @@ public class DateUtilsTest extends TestCase {
      * that are dates (no time), and exactly 1 day spaced after each other
      * (in addition to the proper start and stop dates)
      */
-    private static void assertWeekIterator(Iterator<?> it, Calendar start, Calendar end) {
+    private static void assertWeekIterator(Iterator it, Calendar start, Calendar end) {
         Calendar cal = (Calendar) it.next();
         assertEquals("", start, cal, 0);
         Calendar last = null;

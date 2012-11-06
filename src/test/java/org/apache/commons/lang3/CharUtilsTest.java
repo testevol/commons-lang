@@ -19,12 +19,16 @@ package org.apache.commons.lang3;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.CharUtils;
+
 import junit.framework.TestCase;
 
 /**
  * Unit tests {@link org.apache.commons.lang3.CharUtils}.
  *
- * @version $Id: CharUtilsTest.java 1088899 2011-04-05 05:31:27Z bayard $
+ * @author Apache Software Foundation
+ * @version $Id: CharUtilsTest.java 1067685 2011-02-06 15:38:57Z niallp $
  */
 public class CharUtilsTest extends TestCase {
 
@@ -39,7 +43,7 @@ public class CharUtilsTest extends TestCase {
     //-----------------------------------------------------------------------
     public void testConstructor() {
         assertNotNull(new CharUtils());
-        Constructor<?>[] cons = CharUtils.class.getDeclaredConstructors();
+        Constructor[] cons = CharUtils.class.getDeclaredConstructors();
         assertEquals(1, cons.length);
         assertEquals(true, Modifier.isPublic(cons[0].getModifiers()));
         assertEquals(true, Modifier.isPublic(BooleanUtils.class.getModifiers()));
