@@ -41,7 +41,7 @@ import java.io.Serializable;
  *
  * <p>#ThreadSafe#</p>
  * @since 1.0
- * @version $Id: SerializationUtils.java 1199718 2011-11-09 12:43:20Z sebb $
+ * @version $Id: SerializationUtils.java 1153046 2011-08-02 06:57:04Z bayard $
  */
 public class SerializationUtils {
 
@@ -89,9 +89,7 @@ public class SerializationUtils {
              * it is reasonable to assume the deserialized object
              * is of the same type as the original serialized object
              */
-            @SuppressWarnings("unchecked") // see above
-            T readObject = (T) in.readObject();
-            return readObject;
+            return (T) in.readObject();
 
         } catch (ClassNotFoundException ex) {
             throw new SerializationException("ClassNotFoundException while reading cloned object data", ex);

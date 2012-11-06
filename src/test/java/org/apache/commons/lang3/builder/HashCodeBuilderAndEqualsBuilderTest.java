@@ -16,48 +16,50 @@
  */
 package org.apache.commons.lang3.builder;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
+import junit.framework.TestCase;
 
 /**
  * Tests {@link org.apache.commons.lang3.builder.HashCodeBuilder} and
  * {@link org.apache.commons.lang3.builder.EqualsBuilderTest} to insure that equal
  * objects must have equal hash codes.
  * 
- * @version $Id: HashCodeBuilderAndEqualsBuilderTest.java 1185707 2011-10-18 15:01:49Z ggregory $
+ * @version $Id: HashCodeBuilderAndEqualsBuilderTest.java 1153484 2011-08-03 13:39:42Z ggregory $
  */
-public class HashCodeBuilderAndEqualsBuilderTest {
+public class HashCodeBuilderAndEqualsBuilderTest extends TestCase {
+
+    /**
+     * Constructor for HashCodeBuilderAndEqualsBuilderTest.
+     * @param name
+     */
+    public HashCodeBuilderAndEqualsBuilderTest(String name) {
+        super(name);
+    }
 
     //-----------------------------------------------------------------------
 
-    private void testInteger(boolean testTransients) {
+    public void testInteger(boolean testTransients) {
         Integer i1 = Integer.valueOf(12345);
         Integer i2 = Integer.valueOf(12345);
         assertEqualsAndHashCodeContract(i1, i2, testTransients);
     }
 
-    @Test
     public void testInteger() {
         testInteger(false);
     }
 
-    @Test
     public void testIntegerWithTransients() {
         testInteger(true);
     }
 
-    @Test
     public void testFixture() {
         testFixture(false);
     }
 
-    @Test
     public void testFixtureWithTransients() {
         testFixture(true);
     }
 
-    private void testFixture(boolean testTransients) {
+    public void testFixture(boolean testTransients) {
         assertEqualsAndHashCodeContract(new TestFixture(2, 'c', "Test", (short) 2), new TestFixture(2, 'c', "Test", (short) 2), testTransients);
         assertEqualsAndHashCodeContract(
             new AllTransientFixture(2, 'c', "Test", (short) 2),
@@ -81,7 +83,7 @@ public class HashCodeBuilderAndEqualsBuilderTest {
      * @param rhs The Right-Hand-Side of the equals test
      * @param testTransients wether to test transient fields
      */
-    private void assertEqualsAndHashCodeContract(Object lhs, Object rhs, boolean testTransients) {
+    public void assertEqualsAndHashCodeContract(Object lhs, Object rhs, boolean testTransients) {
         if (EqualsBuilder.reflectionEquals(lhs, rhs, testTransients)) {
             // test a couple of times for consistency.
             assertEquals(HashCodeBuilder.reflectionHashCode(lhs, testTransients), HashCodeBuilder.reflectionHashCode(rhs, testTransients));

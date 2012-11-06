@@ -459,7 +459,7 @@ public class DateUtils {
      * @return the new {@code Date} with the amount added
      * @throws IllegalArgumentException if the date is null
      */
-    public static Date add(Date date, int calendarField, int amount) {
+    private static Date add(Date date, int calendarField, int amount) {
         if (date == null) {
             throw new IllegalArgumentException("The date must not be null");
         }

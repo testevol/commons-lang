@@ -33,7 +33,7 @@ import junit.framework.TestCase;
 /**
  * Unit tests {@link org.apache.commons.lang3.Validate}.
  *
- * @version $Id: ValidateTest.java 1199726 2011-11-09 12:59:24Z sebb $
+ * @version $Id: ValidateTest.java 1153484 2011-08-03 13:39:42Z ggregory $
  */
 public class ValidateTest extends TestCase {
 
@@ -65,9 +65,9 @@ public class ValidateTest extends TestCase {
 
     //-----------------------------------------------------------------------
     public void testIsTrue3() {
-        Validate.isTrue(true, "MSG", 6);
+        Validate.isTrue(true, "MSG", Integer.valueOf(6));
         try {
-            Validate.isTrue(false, "MSG", 6);
+            Validate.isTrue(false, "MSG", Integer.valueOf(6));
             fail("Expecting IllegalArgumentException");
         } catch (IllegalArgumentException ex) {
             assertEquals("MSG", ex.getMessage());
@@ -849,14 +849,11 @@ public class ValidateTest extends TestCase {
     public void testIsInstanceOf() {
         Validate.isInstanceOf(String.class, "hi");
         Validate.isInstanceOf(Integer.class, 1);
-    }
-    
-    public void testIsInstanceOfExceptionMessage() {
         try {
             Validate.isInstanceOf(List.class, "hi");
             fail("Expecting IllegalArgumentException");
         } catch(IllegalArgumentException e) {
-            assertEquals("Expected type: java.util.List, actual: java.lang.String", e.getMessage());
+            assertEquals("The validated object is not an instance of java.util.List", e.getMessage());
         }
     }
     
@@ -874,14 +871,11 @@ public class ValidateTest extends TestCase {
     public void testIsAssignable() {
         Validate.isAssignableFrom(CharSequence.class, String.class);
         Validate.isAssignableFrom(AbstractList.class, ArrayList.class);
-    }
-    
-    public void testIsAssignableExceptionMessage() {
         try {
             Validate.isAssignableFrom(List.class, String.class);
             fail("Expecting IllegalArgumentException");
         } catch(IllegalArgumentException e) {
-            assertEquals("Cannot assign a java.lang.String to a java.util.List", e.getMessage());
+            assertEquals("The validated class can not be converted to the java.util.List class", e.getMessage());
         }
     }
     

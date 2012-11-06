@@ -35,7 +35,6 @@ import junit.framework.AssertionFailedError;
 import junit.framework.TestCase;
 
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.time.DateUtils;
 
 /**
  * Unit tests {@link org.apache.commons.lang3.time.DateUtils}.

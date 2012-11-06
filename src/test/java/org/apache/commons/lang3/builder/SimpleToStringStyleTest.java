@@ -16,43 +16,44 @@
  */
 package org.apache.commons.lang3.builder;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import junit.framework.TestCase;
+
 import org.apache.commons.lang3.builder.ToStringStyleTest.Person;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 /**
  * Unit tests {@link org.apache.commons.lang3.builder.SimpleToStringStyleTest}.
  *
- * @version $Id: SimpleToStringStyleTest.java 1185699 2011-10-18 14:51:31Z ggregory $
+ * @version $Id: SimpleToStringStyleTest.java 1153484 2011-08-03 13:39:42Z ggregory $
  */
-public class SimpleToStringStyleTest {
+public class SimpleToStringStyleTest extends TestCase {
 
     private final Integer base = Integer.valueOf(5);
     
-    @Before
-    public void setUp() throws Exception {
+    public SimpleToStringStyleTest(String name) {
+        super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
         ToStringBuilder.setDefaultStyle(ToStringStyle.SIMPLE_STYLE);
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
         ToStringBuilder.setDefaultStyle(ToStringStyle.DEFAULT_STYLE);
     }
 
     //----------------------------------------------------------------
     
-    @Test
     public void testBlank() {
         assertEquals("", new ToStringBuilder(base).toString());
     }
 
-    @Test
     public void testAppendSuper() {
         assertEquals("", new ToStringBuilder(base).appendSuper("").toString());
         assertEquals("<null>", new ToStringBuilder(base).appendSuper("<null>").toString());
@@ -62,7 +63,6 @@ public class SimpleToStringStyleTest {
         assertEquals("hello", new ToStringBuilder(base).appendSuper(null).append("a", "hello").toString());
     }
     
-    @Test
     public void testObject() {
         Integer i3 = Integer.valueOf(3);
         Integer i4 = Integer.valueOf(4);
@@ -80,7 +80,6 @@ public class SimpleToStringStyleTest {
         assertEquals("{}", new ToStringBuilder(base).append("a", (Object) new String[0], true).toString());
     }
 
-    @Test
     public void testPerson() {
         Person p = new Person();
         p.name = "Jane Q. Public";
@@ -89,14 +88,12 @@ public class SimpleToStringStyleTest {
         assertEquals("Jane Q. Public,47,false", new ToStringBuilder(p).append("name", p.name).append("age", p.age).append("smoker", p.smoker).toString());
     }
 
-    @Test
     public void testLong() {
         assertEquals("3", new ToStringBuilder(base).append(3L).toString());
         assertEquals("3", new ToStringBuilder(base).append("a", 3L).toString());
         assertEquals("3,4", new ToStringBuilder(base).append("a", 3L).append("b", 4L).toString());
     }
 
-    @Test
     public void testObjectArray() {
         Object[] array = new Object[] {null, base, new int[] {3, 6}};
         assertEquals("{<null>,5,{3,6}}", new ToStringBuilder(base).append(array).toString());
@@ -106,7 +103,6 @@ public class SimpleToStringStyleTest {
         assertEquals("<null>", new ToStringBuilder(base).append((Object) array).toString());
     }
 
-    @Test
     public void testLongArray() {
         long[] array = new long[] {1, 2, -3, 4};
         assertEquals("{1,2,-3,4}", new ToStringBuilder(base).append(array).toString());
@@ -116,7 +112,6 @@ public class SimpleToStringStyleTest {
         assertEquals("<null>", new ToStringBuilder(base).append((Object) array).toString());
     }
 
-    @Test
     public void testLongArrayArray() {
         long[][] array = new long[][] {{1, 2}, null, {5}};
         assertEquals("{{1,2},<null>,{5}}", new ToStringBuilder(base).append(array).toString());

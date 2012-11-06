@@ -16,39 +16,37 @@
  */
 package org.apache.commons.lang3;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 
-import org.junit.Test;
+import junit.framework.TestCase;
 
 /**
  * Unit tests {@link org.apache.commons.lang3.CharUtils}.
  *
- * @version $Id: CharUtilsTest.java 1199724 2011-11-09 12:51:52Z sebb $
+ * @version $Id: CharUtilsTest.java 1088899 2011-04-05 05:31:27Z bayard $
  */
-public class CharUtilsTest {
+public class CharUtilsTest extends TestCase {
 
     private static final Character CHARACTER_A = new Character('A');
     private static final Character CHARACTER_B = new Character('B');
     private static final char CHAR_COPY = '\u00a9';
     
-    @Test
+    public CharUtilsTest(String name) {
+        super(name);
+    }
+
+    //-----------------------------------------------------------------------
     public void testConstructor() {
         assertNotNull(new CharUtils());
         Constructor<?>[] cons = CharUtils.class.getDeclaredConstructors();
         assertEquals(1, cons.length);
-        assertTrue(Modifier.isPublic(cons[0].getModifiers()));
-        assertTrue(Modifier.isPublic(BooleanUtils.class.getModifiers()));
-        assertFalse(Modifier.isFinal(BooleanUtils.class.getModifiers()));
+        assertEquals(true, Modifier.isPublic(cons[0].getModifiers()));
+        assertEquals(true, Modifier.isPublic(BooleanUtils.class.getModifiers()));
+        assertEquals(false, Modifier.isFinal(BooleanUtils.class.getModifiers()));
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testToCharacterObject_char() {
         assertEquals(new Character('a'), CharUtils.toCharacterObject('a'));
         assertSame(CharUtils.toCharacterObject('a'), CharUtils.toCharacterObject('a'));
@@ -69,7 +67,6 @@ public class CharUtilsTest {
         }
     }
     
-    @Test
     public void testToCharacterObject_String() {
         assertEquals(null, CharUtils.toCharacterObject(null));
         assertEquals(null, CharUtils.toCharacterObject(""));
@@ -79,7 +76,7 @@ public class CharUtilsTest {
         assertSame(CharUtils.toCharacterObject("a"), CharUtils.toCharacterObject('a'));
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testToChar_Character() {
         assertEquals('A', CharUtils.toChar(CHARACTER_A));
         assertEquals('B', CharUtils.toChar(CHARACTER_B));
@@ -88,14 +85,13 @@ public class CharUtilsTest {
         } catch (IllegalArgumentException ex) {}
     }
     
-    @Test
     public void testToChar_Character_char() {
         assertEquals('A', CharUtils.toChar(CHARACTER_A, 'X'));
         assertEquals('B', CharUtils.toChar(CHARACTER_B, 'X'));
         assertEquals('X', CharUtils.toChar((Character) null, 'X'));
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testToChar_String() {
         assertEquals('A', CharUtils.toChar("A"));
         assertEquals('B', CharUtils.toChar("BA"));
@@ -107,7 +103,6 @@ public class CharUtilsTest {
         } catch (IllegalArgumentException ex) {}
     }
     
-    @Test
     public void testToChar_String_char() {
         assertEquals('A', CharUtils.toChar("A", 'X'));
         assertEquals('B', CharUtils.toChar("BA", 'X'));
@@ -115,7 +110,7 @@ public class CharUtilsTest {
         assertEquals('X', CharUtils.toChar((String) null, 'X'));
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testToIntValue_char() {
         assertEquals(0, CharUtils.toIntValue('0'));
         assertEquals(1, CharUtils.toIntValue('1'));
@@ -132,14 +127,13 @@ public class CharUtilsTest {
         } catch (IllegalArgumentException ex) {}
     }
     
-    @Test
     public void testToIntValue_char_int() {
         assertEquals(0, CharUtils.toIntValue('0', -1));
         assertEquals(3, CharUtils.toIntValue('3', -1));
         assertEquals(-1, CharUtils.toIntValue('a', -1));
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testToIntValue_Character() {
         assertEquals(0, CharUtils.toIntValue(new Character('0')));
         assertEquals(3, CharUtils.toIntValue(new Character('3')));
@@ -151,7 +145,6 @@ public class CharUtilsTest {
         } catch (IllegalArgumentException ex) {}
     }
     
-    @Test
     public void testToIntValue_Character_int() {
         assertEquals(0, CharUtils.toIntValue(new Character('0'), -1));
         assertEquals(3, CharUtils.toIntValue(new Character('3'), -1));
@@ -159,7 +152,7 @@ public class CharUtilsTest {
         assertEquals(-1, CharUtils.toIntValue(null, -1));
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testToString_char() {
         assertEquals("a", CharUtils.toString('a'));
         assertSame(CharUtils.toString('a'), CharUtils.toString('a'));
@@ -183,14 +176,13 @@ public class CharUtilsTest {
         }
     }
     
-    @Test
     public void testToString_Character() {
         assertEquals(null, CharUtils.toString(null));
         assertEquals("A", CharUtils.toString(CHARACTER_A));
         assertSame(CharUtils.toString(CHARACTER_A), CharUtils.toString(CHARACTER_A));
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testToUnicodeEscaped_char() {
         assertEquals("\\u0041", CharUtils.unicodeEscaped('A'));
        
@@ -204,152 +196,151 @@ public class CharUtilsTest {
         assertEquals("\\u1001", CharUtils.unicodeEscaped((char) 0x1001));
     }
     
-    @Test
     public void testToUnicodeEscaped_Character() {
         assertEquals(null, CharUtils.unicodeEscaped(null));
         assertEquals("\\u0041", CharUtils.unicodeEscaped(CHARACTER_A));
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testIsAscii_char() {
-        assertTrue(CharUtils.isAscii('a'));
-        assertTrue(CharUtils.isAscii('A'));
-        assertTrue(CharUtils.isAscii('3'));
-        assertTrue(CharUtils.isAscii('-'));
-        assertTrue(CharUtils.isAscii('\n'));
-        assertFalse(CharUtils.isAscii(CHAR_COPY));
+        assertEquals(true, CharUtils.isAscii('a'));
+        assertEquals(true, CharUtils.isAscii('A'));
+        assertEquals(true, CharUtils.isAscii('3'));
+        assertEquals(true, CharUtils.isAscii('-'));
+        assertEquals(true, CharUtils.isAscii('\n'));
+        assertEquals(false, CharUtils.isAscii(CHAR_COPY));
        
         for (int i = 0; i < 128; i++) {
             if (i < 128) {
-                assertTrue(CharUtils.isAscii((char) i));
+                assertEquals(true, CharUtils.isAscii((char) i));
             } else {
-                assertFalse(CharUtils.isAscii((char) i));
+                assertEquals(false, CharUtils.isAscii((char) i));
             }
         }
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testIsAsciiPrintable_char() {
-        assertTrue(CharUtils.isAsciiPrintable('a'));
-        assertTrue(CharUtils.isAsciiPrintable('A'));
-        assertTrue(CharUtils.isAsciiPrintable('3'));
-        assertTrue(CharUtils.isAsciiPrintable('-'));
-        assertFalse(CharUtils.isAsciiPrintable('\n'));
-        assertFalse(CharUtils.isAscii(CHAR_COPY));
+        assertEquals(true, CharUtils.isAsciiPrintable('a'));
+        assertEquals(true, CharUtils.isAsciiPrintable('A'));
+        assertEquals(true, CharUtils.isAsciiPrintable('3'));
+        assertEquals(true, CharUtils.isAsciiPrintable('-'));
+        assertEquals(false, CharUtils.isAsciiPrintable('\n'));
+        assertEquals(false, CharUtils.isAscii(CHAR_COPY));
        
         for (int i = 0; i < 196; i++) {
             if (i >= 32 && i <= 126) {
-                assertTrue(CharUtils.isAsciiPrintable((char) i));
+                assertEquals(true, CharUtils.isAsciiPrintable((char) i));
             } else {
-                assertFalse(CharUtils.isAsciiPrintable((char) i));
+                assertEquals(false, CharUtils.isAsciiPrintable((char) i));
             }
         }
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testIsAsciiControl_char() {
-        assertFalse(CharUtils.isAsciiControl('a'));
-        assertFalse(CharUtils.isAsciiControl('A'));
-        assertFalse(CharUtils.isAsciiControl('3'));
-        assertFalse(CharUtils.isAsciiControl('-'));
-        assertTrue(CharUtils.isAsciiControl('\n'));
-        assertFalse(CharUtils.isAsciiControl(CHAR_COPY));
+        assertEquals(false, CharUtils.isAsciiControl('a'));
+        assertEquals(false, CharUtils.isAsciiControl('A'));
+        assertEquals(false, CharUtils.isAsciiControl('3'));
+        assertEquals(false, CharUtils.isAsciiControl('-'));
+        assertEquals(true, CharUtils.isAsciiControl('\n'));
+        assertEquals(false, CharUtils.isAsciiControl(CHAR_COPY));
        
         for (int i = 0; i < 196; i++) {
             if (i < 32 || i == 127) {
-                assertTrue(CharUtils.isAsciiControl((char) i));
+                assertEquals(true, CharUtils.isAsciiControl((char) i));
             } else {
-                assertFalse(CharUtils.isAsciiControl((char) i));
+                assertEquals(false, CharUtils.isAsciiControl((char) i));
             }
         }
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testIsAsciiAlpha_char() {
-        assertTrue(CharUtils.isAsciiAlpha('a'));
-        assertTrue(CharUtils.isAsciiAlpha('A'));
-        assertFalse(CharUtils.isAsciiAlpha('3'));
-        assertFalse(CharUtils.isAsciiAlpha('-'));
-        assertFalse(CharUtils.isAsciiAlpha('\n'));
-        assertFalse(CharUtils.isAsciiAlpha(CHAR_COPY));
+        assertEquals(true, CharUtils.isAsciiAlpha('a'));
+        assertEquals(true, CharUtils.isAsciiAlpha('A'));
+        assertEquals(false, CharUtils.isAsciiAlpha('3'));
+        assertEquals(false, CharUtils.isAsciiAlpha('-'));
+        assertEquals(false, CharUtils.isAsciiAlpha('\n'));
+        assertEquals(false, CharUtils.isAsciiAlpha(CHAR_COPY));
        
         for (int i = 0; i < 196; i++) {
             if ((i >= 'A' && i <= 'Z') || (i >= 'a' && i <= 'z')) {
-                assertTrue(CharUtils.isAsciiAlpha((char) i));
+                assertEquals(true, CharUtils.isAsciiAlpha((char) i));
             } else {
-                assertFalse(CharUtils.isAsciiAlpha((char) i));
+                assertEquals(false, CharUtils.isAsciiAlpha((char) i));
             }
         }
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testIsAsciiAlphaUpper_char() {
-        assertFalse(CharUtils.isAsciiAlphaUpper('a'));
-        assertTrue(CharUtils.isAsciiAlphaUpper('A'));
-        assertFalse(CharUtils.isAsciiAlphaUpper('3'));
-        assertFalse(CharUtils.isAsciiAlphaUpper('-'));
-        assertFalse(CharUtils.isAsciiAlphaUpper('\n'));
-        assertFalse(CharUtils.isAsciiAlphaUpper(CHAR_COPY));
+        assertEquals(false, CharUtils.isAsciiAlphaUpper('a'));
+        assertEquals(true, CharUtils.isAsciiAlphaUpper('A'));
+        assertEquals(false, CharUtils.isAsciiAlphaUpper('3'));
+        assertEquals(false, CharUtils.isAsciiAlphaUpper('-'));
+        assertEquals(false, CharUtils.isAsciiAlphaUpper('\n'));
+        assertEquals(false, CharUtils.isAsciiAlphaUpper(CHAR_COPY));
        
         for (int i = 0; i < 196; i++) {
             if (i >= 'A' && i <= 'Z') {
-                assertTrue(CharUtils.isAsciiAlphaUpper((char) i));
+                assertEquals(true, CharUtils.isAsciiAlphaUpper((char) i));
             } else {
-                assertFalse(CharUtils.isAsciiAlphaUpper((char) i));
+                assertEquals(false, CharUtils.isAsciiAlphaUpper((char) i));
             }
         }
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testIsAsciiAlphaLower_char() {
-        assertTrue(CharUtils.isAsciiAlphaLower('a'));
-        assertFalse(CharUtils.isAsciiAlphaLower('A'));
-        assertFalse(CharUtils.isAsciiAlphaLower('3'));
-        assertFalse(CharUtils.isAsciiAlphaLower('-'));
-        assertFalse(CharUtils.isAsciiAlphaLower('\n'));
-        assertFalse(CharUtils.isAsciiAlphaLower(CHAR_COPY));
+        assertEquals(true, CharUtils.isAsciiAlphaLower('a'));
+        assertEquals(false, CharUtils.isAsciiAlphaLower('A'));
+        assertEquals(false, CharUtils.isAsciiAlphaLower('3'));
+        assertEquals(false, CharUtils.isAsciiAlphaLower('-'));
+        assertEquals(false, CharUtils.isAsciiAlphaLower('\n'));
+        assertEquals(false, CharUtils.isAsciiAlphaLower(CHAR_COPY));
        
         for (int i = 0; i < 196; i++) {
             if (i >= 'a' && i <= 'z') {
-                assertTrue(CharUtils.isAsciiAlphaLower((char) i));
+                assertEquals(true, CharUtils.isAsciiAlphaLower((char) i));
             } else {
-                assertFalse(CharUtils.isAsciiAlphaLower((char) i));
+                assertEquals(false, CharUtils.isAsciiAlphaLower((char) i));
             }
         }
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testIsAsciiNumeric_char() {
-        assertFalse(CharUtils.isAsciiNumeric('a'));
-        assertFalse(CharUtils.isAsciiNumeric('A'));
-        assertTrue(CharUtils.isAsciiNumeric('3'));
-        assertFalse(CharUtils.isAsciiNumeric('-'));
-        assertFalse(CharUtils.isAsciiNumeric('\n'));
-        assertFalse(CharUtils.isAsciiNumeric(CHAR_COPY));
+        assertEquals(false, CharUtils.isAsciiNumeric('a'));
+        assertEquals(false, CharUtils.isAsciiNumeric('A'));
+        assertEquals(true, CharUtils.isAsciiNumeric('3'));
+        assertEquals(false, CharUtils.isAsciiNumeric('-'));
+        assertEquals(false, CharUtils.isAsciiNumeric('\n'));
+        assertEquals(false, CharUtils.isAsciiNumeric(CHAR_COPY));
        
         for (int i = 0; i < 196; i++) {
             if (i >= '0' && i <= '9') {
-                assertTrue(CharUtils.isAsciiNumeric((char) i));
+                assertEquals(true, CharUtils.isAsciiNumeric((char) i));
             } else {
-                assertFalse(CharUtils.isAsciiNumeric((char) i));
+                assertEquals(false, CharUtils.isAsciiNumeric((char) i));
             }
         }
     }
     
-    @Test
+    //-----------------------------------------------------------------------
     public void testIsAsciiAlphanumeric_char() {
-        assertTrue(CharUtils.isAsciiAlphanumeric('a'));
-        assertTrue(CharUtils.isAsciiAlphanumeric('A'));
-        assertTrue(CharUtils.isAsciiAlphanumeric('3'));
-        assertFalse(CharUtils.isAsciiAlphanumeric('-'));
-        assertFalse(CharUtils.isAsciiAlphanumeric('\n'));
-        assertFalse(CharUtils.isAsciiAlphanumeric(CHAR_COPY));
+        assertEquals(true, CharUtils.isAsciiAlphanumeric('a'));
+        assertEquals(true, CharUtils.isAsciiAlphanumeric('A'));
+        assertEquals(true, CharUtils.isAsciiAlphanumeric('3'));
+        assertEquals(false, CharUtils.isAsciiAlphanumeric('-'));
+        assertEquals(false, CharUtils.isAsciiAlphanumeric('\n'));
+        assertEquals(false, CharUtils.isAsciiAlphanumeric(CHAR_COPY));
        
         for (int i = 0; i < 196; i++) {
             if ((i >= 'A' && i <= 'Z') || (i >= 'a' && i <= 'z') || (i >= '0' && i <= '9')) {
-                assertTrue(CharUtils.isAsciiAlphanumeric((char) i));
+                assertEquals(true, CharUtils.isAsciiAlphanumeric((char) i));
             } else {
-                assertFalse(CharUtils.isAsciiAlphanumeric((char) i));
+                assertEquals(false, CharUtils.isAsciiAlphanumeric((char) i));
             }
         }
     }

@@ -29,7 +29,7 @@ import org.junit.Test;
 
 /**
  * 
- * @version $Id: EnumUtilsTest.java 1199724 2011-11-09 12:51:52Z sebb $
+ * @version $Id: EnumUtilsTest.java 1149320 2011-07-21 19:11:47Z mbenson $
  */
 public class EnumUtilsTest {
 
@@ -44,13 +44,13 @@ public class EnumUtilsTest {
         Map<String, Traffic> test = EnumUtils.getEnumMap(Traffic.class);
         assertEquals( "getEnumMap not created correctly", "{RED=RED, AMBER=AMBER, GREEN=GREEN}", test.toString());
         assertEquals(3, test.size());
-        assertTrue(test.containsKey("RED"));
+        assertEquals(true, test.containsKey("RED"));
         assertEquals(Traffic.RED, test.get("RED"));
-        assertTrue(test.containsKey("AMBER"));
+        assertEquals(true, test.containsKey("AMBER"));
         assertEquals(Traffic.AMBER, test.get("AMBER"));
-        assertTrue(test.containsKey("GREEN"));
+        assertEquals(true, test.containsKey("GREEN"));
         assertEquals(Traffic.GREEN, test.get("GREEN"));
-        assertFalse(test.containsKey("PURPLE"));
+        assertEquals(false, test.containsKey("PURPLE"));
     }
 
     @Test
@@ -64,11 +64,11 @@ public class EnumUtilsTest {
 
     @Test
     public void test_isEnum() {
-        assertTrue(EnumUtils.isValidEnum(Traffic.class, "RED"));
-        assertTrue(EnumUtils.isValidEnum(Traffic.class, "AMBER"));
-        assertTrue(EnumUtils.isValidEnum(Traffic.class, "GREEN"));
-        assertFalse(EnumUtils.isValidEnum(Traffic.class, "PURPLE"));
-        assertFalse(EnumUtils.isValidEnum(Traffic.class, null));
+        assertEquals(true, EnumUtils.isValidEnum(Traffic.class, "RED"));
+        assertEquals(true, EnumUtils.isValidEnum(Traffic.class, "AMBER"));
+        assertEquals(true, EnumUtils.isValidEnum(Traffic.class, "GREEN"));
+        assertEquals(false, EnumUtils.isValidEnum(Traffic.class, "PURPLE"));
+        assertEquals(false, EnumUtils.isValidEnum(Traffic.class, null));
     }
 
     @Test(expected=NullPointerException.class)
