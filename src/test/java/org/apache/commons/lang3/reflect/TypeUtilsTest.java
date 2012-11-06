@@ -39,7 +39,7 @@ import org.junit.Test;
 
 /**
  * Test TypeUtils
- * @version $Id: TypeUtilsTest.java 1153484 2011-08-03 13:39:42Z ggregory $
+ * @version $Id: TypeUtilsTest.java 1099422 2011-05-04 11:44:41Z sebb $
  */
 @SuppressWarnings({ "unchecked", "unused" , "rawtypes", "null"})
 //raw types, where used, are used purposely
@@ -374,13 +374,13 @@ public class TypeUtilsTest<B> {
         Assert.assertTrue(TypeUtils.isAssignable(float.class, double.class));
         lo = in;
         Assert.assertTrue(TypeUtils.isAssignable(int.class, long.class));
-        lo = Integer.valueOf(0);
+        lo = new Integer(0);
         Assert.assertTrue(TypeUtils.isAssignable(Integer.class, long.class));
         // Long lngW = 1;
         Assert.assertFalse(TypeUtils.isAssignable(int.class, Long.class));
-        // lngW = Integer.valueOf( 0 );
+        // lngW = new Integer( 0 );
         Assert.assertFalse(TypeUtils.isAssignable(Integer.class, Long.class));
-        in = Integer.valueOf(0);
+        in = new Integer(0);
         Assert.assertTrue(TypeUtils.isAssignable(Integer.class, int.class));
         Integer inte = in;
         Assert.assertTrue(TypeUtils.isAssignable(int.class, Integer.class));
@@ -395,7 +395,7 @@ public class TypeUtilsTest<B> {
         Type longComparableType = getClass().getField("longComparable").getGenericType();
         // longComparable = 1;
         Assert.assertFalse(TypeUtils.isAssignable(int.class, longComparableType));
-        // longComparable = Integer.valueOf( 0 );
+        // longComparable = new Integer( 0 );
         Assert.assertFalse(TypeUtils.isAssignable(Integer.class, longComparableType));
         // int[] ia;
         // long[] la = ia;

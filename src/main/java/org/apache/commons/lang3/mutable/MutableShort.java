@@ -21,7 +21,7 @@ package org.apache.commons.lang3.mutable;
  * 
  * @see Short
  * @since 2.1
- * @version $Id: MutableShort.java 1153488 2011-08-03 13:47:49Z ggregory $
+ * @version $Id: MutableShort.java 1096472 2011-04-25 13:28:06Z mbenson $
  */
 public class MutableShort extends Number implements Comparable<MutableShort>, Mutable<Number> {
 
@@ -82,7 +82,7 @@ public class MutableShort extends Number implements Comparable<MutableShort>, Mu
      * @return the value as a Short, never null
      */
     public Short getValue() {
-        return Short.valueOf(this.value);
+        return new Short(this.value);
     }
 
     /**

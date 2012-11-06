@@ -38,8 +38,8 @@ import junit.framework.TestCase;
  */
 public class SystemUtilsTest extends TestCase {
 
-    public SystemUtilsTest(String name) {
-        super(name);
+	public SystemUtilsTest(String name) {
+		super(name);
     }
 
     public void testConstructor() {

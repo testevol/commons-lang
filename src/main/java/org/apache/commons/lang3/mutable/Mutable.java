@@ -27,8 +27,7 @@ package org.apache.commons.lang3.mutable;
  * a collection (for example a total in a map) without needing to create new Integer/Long wrapper objects.
  * 
  * @since 2.1
- * @param <T> the type to set and get 
- * @version $Id: Mutable.java 1153213 2011-08-02 17:35:39Z ggregory $
+ * @version $Id: Mutable.java 1088899 2011-04-05 05:31:27Z bayard $
  */
 public interface Mutable<T> {
 

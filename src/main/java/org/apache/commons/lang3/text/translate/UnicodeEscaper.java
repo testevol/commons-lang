@@ -20,10 +20,10 @@ import java.io.IOException;
 import java.io.Writer;
 
 /**
- * Translates codepoints to their Unicode escaped value.
+ * Translates codepoints to their unicode escaped value.
  *
  * @since 3.0
- * @version $Id: UnicodeEscaper.java 1148520 2011-07-19 20:53:23Z ggregory $
+ * @version $Id: UnicodeEscaper.java 1142151 2011-07-02 04:06:23Z bayard $
  */
 public class UnicodeEscaper extends CodePointTranslator {
 
@@ -111,9 +111,9 @@ public class UnicodeEscaper extends CodePointTranslator {
             }
         }
 
-        // TODO: Handle potential + sign per various Unicode escape implementations
+        // TODO: Handle potential + sign per various unicode escape implementations
         if (codepoint > 0xffff) {
-            // TODO: Figure out what to do. Output as two Unicodes?
+            // TODO: Figure out what to do. Output as two unicodes?
             //       Does this make this a Java-specific output class?
             out.write("\\u" + hex(codepoint));
         } else if (codepoint > 0xfff) {
